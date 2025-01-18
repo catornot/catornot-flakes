@@ -25,6 +25,7 @@ rustPlatform.buildRustPackage rec {
     ref = "main";
     rev = rev;
     submodules = true; # whyyyyyy
+    allRefs = true;
   };
 
   meta = {
