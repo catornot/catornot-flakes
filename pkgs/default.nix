@@ -23,6 +23,7 @@
         let
         in
         {
+          papa-src = pkgs.callPackage ./papa-src { };
           papa = pkgs.callPackage ./papa { };
         };
     };
