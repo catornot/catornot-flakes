@@ -36,24 +36,23 @@ stdenv.mkDerivation rec {
   #   sha256 = "sha256-o3kEL9oKeHq0us+zHOd8LvIkJ0fWhYpJVSIKLB+daNQ=";
   #   curlOptsList = ["-o result.part" "-H \"Accept: application/vnd.oci.image.manifest.v1+json\"" "-H \"Authorization: ${tok}\""];
   # };
-  src =
-    let
-      manifest = fetchurlWithHeaders {
-        url = "https://${reg}/v2/${img}/manifests/${tag}";
-        sha256 = "sha256-o3kEL9oKeHq0us+zHOd8LvIkJ0fWhYpJVSIKLB+daNQ=";
-        headers = ''-H "Accept: application/vnd.oci.image.manifest.v1+json" -H "Authorization: ${tok}"'';
-      };
+  # src =
+  #   let
+  #     manifest = fetchurlWithHeaders {
+  #       url = "https://${reg}/v2/${img}/manifests/${tag}";
+  #       sha256 = "sha256-o3kEL9oKeHq0us+zHOd8LvIkJ0fWhYpJVSIKLB+daNQ=";
+  #       headers = ''-H "Accept: application/vnd.oci.image.manifest.v1+json" -H "Authorization: ${tok}"'';
+  #     };
 
-      mapManifest = key: keys: {
-        file = builtins.trace key keys;
-      };
-      urls = builtins.mapAttrs mapManifest (builtins.fromJSON (builtins.readFile (builtins.trace "wow" manifest)));
-      wow = builtins.trace urls "wow";
-    in
-    manifest + wow;
+  #     mapManifest = key: keys: {
+  #       file = builtins.trace key keys;
+  #     };
+  #     urls = builtins.mapAttrs mapManifest (builtins.fromJSON (builtins.readFile (builtins.trace "wow" manifest)));
+  #     wow = builtins.trace urls "wow";
+  #   in
+  #   manifest + wow;
 
-  #
-  # src = ./nsfetch.sh;
+  src = ./nsfetch.sh;
   # builder = ./nsfetch.sh;
 
   nativeBuildInputs = [
@@ -69,12 +68,13 @@ stdenv.mkDerivation rec {
   '';
 
   sourceRoot = ".";
-  phases = [
-    "unpackPhase"
-    "buildPhase"
-    "installPhase"
-  ];
+  # phases = [
+  #   "unpackPhase"
+  #   "buildPhase"
+  #   "installPhase"
+  # ];
   installPhase = ''
+    bash ${./nsfetch.sh} $out
     ls ${src}
 
     mv bin $out/bin
