@@ -21,12 +21,16 @@
 
       packages =
         let
+          erosanix-pkgs = (pkgs // inputs.erosanix.packages.x86_64-linux // inputs.erosanix.lib.x86_64-linux);
         in
         {
           papa-src = pkgs.callPackage ./papa-src { };
           papa = pkgs.callPackage ./papa { };
           titanfall2 = pkgs.callPackage ./titanfall2 { };
-          northstar-dedicated = pkgs.callPackage ./northstar-dedicated { };
+          northstar-dedicated = pkgs.callPackage ./northstar-dedicated {
+            mkWindowsApp = erosanix-pkgs.mkWindowsApp;
+            wine = erosanix-pkgs.wineWowPackages.base;
+          };
         };
     };
 }
