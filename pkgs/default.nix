@@ -27,6 +27,7 @@
           papa-src = pkgs.callPackage ./papa-src { };
           papa = pkgs.callPackage ./papa { };
           titanfall2 = pkgs.callPackage ./titanfall2 { };
+          nswrap = pkgs.callPackage ./nswrap { };
           northstar-dedicated = pkgs.callPackage ./northstar-dedicated {
             mkWindowsApp = erosanix-pkgs.mkWindowsApp;
             wine = erosanix-pkgs.wineWowPackages.base;

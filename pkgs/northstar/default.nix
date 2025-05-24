@@ -26,8 +26,7 @@ stdenv.mkDerivation rec {
   sourceRoot = ".";
 
   phases = [ "installPhase" ];
-  installPhase = ''
-  '';
+  installPhase = '''';
 
   meta = {
   };
