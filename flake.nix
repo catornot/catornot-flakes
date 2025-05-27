@@ -23,6 +23,16 @@
         ./pkgs
       ];
 
+      flake.modules.nixos = {
+        northstart-dedicated = import ./modules/northstart-dedicated.nix { self = self; };
+      };
+
+      flake.overlays.northstar = final: prev: {
+        package-wine-env = self.packages.wine-env;
+        package-nswrap = self.packages.nswrap;
+        package-nswine-run = self.packages.nswine-run;
+      };
+
       perSystem =
         { pkgs, ... }:
         {

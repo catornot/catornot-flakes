@@ -26,29 +26,29 @@ let
     vendorHash = "sha256-8B1nbk0ZaYEuujSsdF+KgXFimQdj8JAujQj0af6ECfM=";
   };
 in
-  stdenv.mkDerivation {
-    pname = "nswrap";
-    inherit version;
+stdenv.mkDerivation {
+  pname = "nswrap";
+  inherit version;
 
-    src = repo-src;
+  src = repo-src;
 
-    nativeBuildInputs = [
-    ];
-    buildInputs = [
-      glibc
-      libunwind
-      libgnurl
-    ];
+  nativeBuildInputs = [
+  ];
+  buildInputs = [
+    glibc
+    libunwind
+    libgnurl
+  ];
 
-    buildPhase = ''
-      mkdir -p $out/bin/
-      gcc -Wall -Wextra $src/nswrap/nswrap.c -o $out/bin/nswrap
-    '';
+  buildPhase = ''
+    mkdir -p $out/bin/
+    gcc -Wall -Wextra $src/nswrap/nswrap.c -o $out/bin/nswrap
+  '';
 
-    # installPhase = ''
-    #   install -Dm755 "${nswine}/bin/nswine" "$out/bin/nswine"
-    # '';
+  # installPhase = ''
+  #   install -Dm755 "${nswine}/bin/nswine" "$out/bin/nswine"
+  # '';
 
-    meta = {
-    };
-  }
+  meta = {
+  };
+}
