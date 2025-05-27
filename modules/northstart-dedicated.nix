@@ -128,7 +128,7 @@ in
         User = cfg.user;
         ExecStart = lib.escapeShellArgs (
           [
-            (lib.getExe cfg.package-nswine-run.override {  })
+            (lib.getExe cfg.package-nswine-run.override { nswine-env-path = "${cfg.stateDir}/wine"; })
             ''+ns_server_name="${cfg.settings.name}"''
             ''+ns_server_desc="${cfg.settings.description}"''
             ''+ns_server_password="${

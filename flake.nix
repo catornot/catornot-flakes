@@ -28,9 +28,9 @@
       };
 
       flake.overlays.northstar = final: prev: {
-        package-wine-env = self.packages.wine-env;
-        package-nswrap = self.packages.nswrap;
-        package-nswine-run = self.packages.nswine-run;
+        nswine-env = self.packages.wine-env;
+        nswrap = self.packages.nswrap;
+        nswine-run = self.packages.nswine-run;
       };
 
       perSystem =
