@@ -2,20 +2,20 @@
   stdenvNoCC,
   wine64,
 }:
-  stdenvNoCC.mkDerivation {
-    pname = "nswine-env";
-    version = "0.1.0";
+stdenvNoCC.mkDerivation {
+  pname = "nswine-env";
+  version = "0.1.0";
 
-    src = ./.;
+  src = ./.;
 
-    nativeBuildInputs = [
-      wine64
-    ];
-    buildInputs = [
-    ];
+  nativeBuildInputs = [
+    wine64
+  ];
+  buildInputs = [
+  ];
 
-    noUnpackPhase = "";
-    buildPhase = "
+  noUnpackPhase = "";
+  buildPhase = "
       export WINEARCH=win64 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\"
       export WINEPREFIX=$out/wine
       mkdir -p $out/wine
@@ -36,4 +36,4 @@
       ln -s ${wine64}/include $out/include
       ln -s ${wine64}/share $out/share
     ";
-  }
+}

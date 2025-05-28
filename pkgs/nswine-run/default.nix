@@ -21,14 +21,19 @@ writers.writeRustBin "nswine-run" { } # rust
 
       let mut args = env::args();
       _ = args.next();
+      let path_arg = args.next().ok_or("include the path to the northstar install pls")?.to_string();
+
+      println!("tf2 dir is : {path_arg}");
+
+      let args = args.inspect(|arg| println!("with arg: {arg}")).collect::<Vec<_>>();
       
       std::process::Command::new(dbg!("${nswrap}/bin/nswrap").to_string())
         .envs(envs)
-        .current_dir(args.next().ok_or("include the path to the northstar install pls")?.to_string())
+        .current_dir(path_arg)
         .arg("-dedicated")
         .args(args)
-        .spawn()?
-        .wait()?;
+        .spawn().map_err(|err| format!("can't spawn: {err:?}"))?
+        .wait().map_err(|err| format!("can't wait: {err:?}"))?;
 
       println!("wrapper done!");
 

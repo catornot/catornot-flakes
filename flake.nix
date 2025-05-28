@@ -21,20 +21,30 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         ./pkgs
+        (
+          { withSystem, ... }:
+          {
+            flake.overlays.northstar =
+              final: prev:
+              withSystem prev.stdenv.hostPlatform.system (
+                # perSystem parameters. Note that perSystem does not use `final` or `prev`.
+                { config, ... }:
+                {
+                  nswine-env = config.packages.nswine-env;
+                  nswrap = config.packages.nswrap;
+                  nswine-run = config.packages.nswine-run;
+                }
+              );
+          }
+        )
       ];
 
-      flake.modules.nixos = {
-        northstart-dedicated = import ./modules/northstart-dedicated.nix { self = self; };
-      };
-
-      flake.overlays.northstar = final: prev: {
-        nswine-env = self.packages.wine-env;
-        nswrap = self.packages.nswrap;
-        nswine-run = self.packages.nswine-run;
+      flake.nixosModules = {
+        northstar-dedicated = import ./modules/northstart-dedicated.nix { self = self; };
       };
 
       perSystem =
-        { pkgs, ... }:
+        { pkgs, config, ... }:
         {
           formatter = pkgs.nixfmt-rfc-style;
         };

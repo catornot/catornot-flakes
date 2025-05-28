@@ -28,7 +28,10 @@
           papa = pkgs.callPackage ./papa { };
           titanfall2 = pkgs.callPackage ./titanfall2 { };
           nswrap = pkgs.callPackage ./nswrap { };
-          nswine-run = pkgs.callPackage ./nswine-run { nswrap = nswrap; nswine-env-path = pkgs.lib.fakeHash; };
+          nswine-run = pkgs.callPackage ./nswine-run {
+            nswrap = nswrap;
+            nswine-env-path = pkgs.lib.fakeHash;
+          };
           nswine-env = pkgs.callPackage ./nswine-env { };
           northstar-dedicated = pkgs.callPackage ./northstar-dedicated {
             mkWindowsApp = erosanix-pkgs.mkWindowsApp;
