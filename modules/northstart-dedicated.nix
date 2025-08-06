@@ -15,16 +15,12 @@ in
     package-nswine-env = lib.mkPackageOption pkgs "nswine-env" { };
     package-nswrap = lib.mkPackageOption pkgs "nswrap" { };
     package-nswine-run = lib.mkPackageOption pkgs "nswine-run" { };
+    package-northstar-dedicated = lib.mkPackageOption pkgs "northstar-dedicated" { };
 
     stateDir = lib.mkOption {
       type = lib.types.path;
       default = "/var/lib/northstar";
       description = "Directory to store the server state.";
-    };
-
-    northstarInstallDir = lib.mkOption {
-      type = lib.types.pathWith { absolute = true; };
-      description = "Directory where northstar is installed.";
     };
 
     user = lib.mkOption {
@@ -119,33 +115,80 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
 
+      # TODO: should probably delete these files on restart?
       preStart = ''
         mkdir -p ${cfg.stateDir}/wine
         mkdir -p ${cfg.stateDir}/bin
+        mkdir -p ${cfg.stateDir}/titanfall2
+
+        # chmod 662 ${cfg.stateDir}/titanfall2
+
+        mkdir -p ${cfg.stateDir}/titanfall2/R2Northstar
+        mkdir -p ${cfg.stateDir}/titanfall2/R2Northstar/logs
+        mkdir -p ${cfg.stateDir}/wine/bin
+
+        mkdir -p ${cfg.stateDir}/.cache
+        mkdir -p ${cfg.stateDir}/.cache/fontconfig
+        mkdir -p ${cfg.stateDir}/wine/prefix
+
         cp -u -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine
         cp -p -u -r ${cfg.package-nswrap}/bin/nswrap ${cfg.stateDir}/bin/nswrap
         cp -p -u -r ${
           (lib.getExe (cfg.package-nswine-run.override { nswine-env-path = "${cfg.stateDir}/wine"; }))
         } ${cfg.stateDir}/wine/nsrun
+        cp -u -r ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2
+
+
       '';
 
+      # like this?
+      postStop = ''
+        # find ${cfg.stateDir} -xtype l -delete
+        # rm -r ${cfg.stateDir}/titanfall2
+        # rm -r ${cfg.stateDir}/wine
+        # rm -r ${cfg.stateDir}/bin
+        rm ${cfg.stateDir}/bin/nswrap
+        rm ${cfg.stateDir}/wine/nsrun
+        rm -r ${cfg.stateDir}/wine/bin
+      '';
+
+      path = with pkgs; [
+        libGL
+        stdenv.cc
+        zstd
+        libxkbcommon
+        vulkan-loader
+        xorg.libX11
+        xorg.libXcursor
+        xorg.libXi
+        xorg.libXrandr
+        alsa-lib
+        wayland
+        glfw-wayland
+        udev
+        pkg-config
+      ];
+
       serviceConfig = {
-        # ProtectSystem = "strict";
-        ProtectHome = false; # we use it?
         ProtectKernelTunables = true;
         ProtectKernelModules = true;
         ProtectControlGroups = true;
+
+        PrivateDevices = "yes";
+        ProtectHostname = "yes";
+        NoNewPrivileges = "yes";
+
+        Environment = [
+          "LIBGL_ALWAYS_SOFTWARE=1"
+          "GALLIUM_DRIVER=llvmpipe"
+        ];
+
         Type = "exec";
         User = cfg.user;
         ExecStart = lib.escapeShellArgs (
           [
             "${cfg.stateDir}/wine/nsrun"
-            "${
-              if cfg.northstarInstallDir != null then
-                cfg.northstarInstallDir
-              else
-                throw "must include path to northstar install"
-            }"
+            "${cfg.stateDir}/titanfall2"
             ''+ns_server_name="${cfg.settings.name}"''
             ''+ns_server_desc="${cfg.settings.description}"''
             ''+ns_server_password="${

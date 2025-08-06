@@ -1,33 +1,31 @@
 {
-  pkg-config,
-  openssl,
-  stdenv,
+  stdenvNoCC,
   lib,
-  autoPatchelfHook,
   fetchurl,
-
+  unzip,
 }:
 let
 in
-stdenv.mkDerivation rec {
+stdenvNoCC.mkDerivation rec {
   pname = "Northstar";
-  version = "1.30.0";
+  version = "1.30.2";
 
   src = fetchurl {
     url = "https://github.com/R2Northstar/Northstar/releases/download/v${version}/${pname}.release.v${version}.zip";
-    sha256 = "sha256-NmKWql+hhpwk4Sio/7UH8XCc+feJQ9LVRCKgQv4b3ww=";
+    sha256 = "sha256-u6nuy97ia4jMd7CW9RtvhhLAe/mvTYk9J76Ha8a44yI=";
   };
 
-  nativeBuildInputs = [
-  ];
-  buildInputs = [
-  ];
+  dontUnpack = true;
 
-  sourceRoot = ".";
-
-  phases = [ "installPhase" ];
-  installPhase = '''';
+  installPhase = ''
+    ${unzip}/bin/unzip $src -d $out
+  '';
 
   meta = {
+    description = "Northstar Client";
+    homepage = "https://northstar.tf/";
+    license = lib.licenses.mit;
+    platforms = [ "x86_64-linux" ];
+    maintainers = [ ];
   };
 }

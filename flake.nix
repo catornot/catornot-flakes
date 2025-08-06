@@ -7,16 +7,12 @@
       url = "github:hercules-ci/flake-parts";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    erosanix.url = "github:emmanuelrosa/erosanix";
   };
 
   outputs =
     {
       self,
-      nixpkgs,
-      flake-parts,
-      erosanix,
+      ...
     }@inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
@@ -33,6 +29,7 @@
                   nswine-env = config.packages.nswine-env;
                   nswrap = config.packages.nswrap;
                   nswine-run = config.packages.nswine-run;
+                  northstar-dedicated = config.packages.northstar-dedicated;
                 }
               );
           }
@@ -44,9 +41,9 @@
       };
 
       perSystem =
-        { pkgs, config, ... }:
+        { pkgs, ... }:
         {
-          formatter = pkgs.nixfmt-rfc-style;
+          formatter = pkgs.nixfmt-tree;
         };
     };
 }
