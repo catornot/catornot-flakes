@@ -1,7 +1,6 @@
 {
   stdenvNoCC,
-  wine64,
-  xdg-utils,
+  wine,
   xvfb-run,
   lib,
   writeScriptBin,
@@ -10,7 +9,7 @@
   buildGoModule,
 }@inputs:
 let
-  wine-custom = inputs.wine64.overrideAttrs (old: {
+  wine-custom = inputs.wine.overrideAttrs (old: {
     src = fetchFromGitHub {
       owner = "pg9182";
       repo = "nsdockerwine2";
@@ -20,16 +19,16 @@ let
 
     patches = [ ];
 
-    meta.mainProgram = "wine64";
+    meta.mainProgram = "wine";
   });
   wine64 = symlinkJoin {
     name = "wine64";
     paths = [
-      # wine-custom
-      inputs.wine64
+      wine-custom
+      # inputs.wine64
     ];
   };
-  wine-name = "wine64";
+  wine-name = "wine";
 
   nswine = buildGoModule {
     pname = "nswine";
@@ -42,7 +41,9 @@ let
         sha256 = "sha256-Y0oDQYUnsChdRyId73paTTgJ2k5n0Y3Cn1Y2TeHdwDo=";
       }
     }/nswine";
+
     vendorHash = "sha256-8B1nbk0ZaYEuujSsdF+KgXFimQdj8JAujQj0af6ECfM=";
+
     patches = [
       ./remove_extra.patch
     ];
@@ -94,16 +95,16 @@ stdenvNoCC.mkDerivation {
       cp -r ${wine64}/include/* $TMP/include
       cp -r ${wine64}/share/* $TMP/share
       
-      rm $TMP/lib/wine/x86_64-windows/explorer.exe
-      cp ${wine64}/lib/wine/x86_64-windows/explorer.exe $TMP/lib/wine/x86_64-windows/explorer.exe
-      chmod 777 $TMP/lib/wine/x86_64-windows/explorer.exe
-      NSWINE_UNSAFE=1 nswine --prefix $TMP
+      # rm $TMP/lib/wine/x86_64-windows/explorer.exe
+      # cp ${wine64}/lib/wine/x86_64-windows/explorer.exe $TMP/lib/wine/x86_64-windows/explorer.exe
+      # chmod 777 $TMP/lib/wine/x86_64-windows/explorer.exe
+      # NSWINE_UNSAFE=1 nswine --prefix $TMP
 
       cp -r $TMP/lib $out/lib
       ln -s $out/lib $out/lib64
 
-      rm $out/bin/wine64
-      cp ${writeScriptBin "wine64" ''${xvfb-run}/bin/xvfb-run ${wine64}/bin/${wine-name} "$@"''}/bin/wine64 $out/bin/wine64
+      # rm $out/bin/${wine-name}
+      # cp ${writeScriptBin wine-name ''${xvfb-run}/bin/xvfb-run ${wine64}/bin/${wine-name} "$@"''}/bin/${wine-name} $out/bin/${wine-name}
   ";
 }
 

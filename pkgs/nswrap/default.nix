@@ -4,16 +4,22 @@
   glibc,
   libunwind,
   libgnurl,
+  applyPatches,
 }:
 stdenv.mkDerivation {
   pname = "nswrap";
   version = "1.0.0";
 
-  src = fetchFromGitHub {
-    owner = "pg9182";
-    repo = "nsdockerwine2";
-    rev = "c412fb15ef20ebb6ba674796ac527a558942772a";
-    sha256 = "sha256-Y0oDQYUnsChdRyId73paTTgJ2k5n0Y3Cn1Y2TeHdwDo=";
+  src = applyPatches {
+    src = fetchFromGitHub {
+      owner = "pg9182";
+      repo = "nsdockerwine2";
+      rev = "c412fb15ef20ebb6ba674796ac527a558942772a";
+      sha256 = "sha256-Y0oDQYUnsChdRyId73paTTgJ2k5n0Y3Cn1Y2TeHdwDo=";
+    };
+    patches = [
+      ./nswrap.patch
+    ];
   };
 
   nativeBuildInputs = [

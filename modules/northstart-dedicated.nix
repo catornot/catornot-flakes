@@ -1,8 +1,8 @@
 { self }:
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,10 +12,12 @@ in
   options.services.northstar-dedicated = {
     enable = lib.mkEnableOption "Northstar Dedicated Server";
 
-    package-nswine-env = lib.mkPackageOption pkgs "nswine-env" { };
-    package-nswrap = lib.mkPackageOption pkgs "nswrap" { };
-    package-nswine-run = lib.mkPackageOption pkgs "nswine-run" { };
-    package-northstar-dedicated = lib.mkPackageOption pkgs "northstar-dedicated" { };
+    package-nswine-env = lib.mkPackageOption self.packages.${pkgs.system} "nswine-env" { };
+    package-nswrap = lib.mkPackageOption self.packages.${pkgs.system} "nswrap" { };
+    package-nswine-run = lib.mkPackageOption self.packages.${pkgs.system} "nswine-run" { };
+    package-northstar-dedicated =
+      lib.mkPackageOption self.packages.${pkgs.system} "northstar-dedicated"
+        { };
 
     stateDir = lib.mkOption {
       type = lib.types.path;
@@ -151,23 +153,6 @@ in
         rm ${cfg.stateDir}/wine/nsrun
         rm -r ${cfg.stateDir}/wine/bin
       '';
-
-      path = with pkgs; [
-        libGL
-        stdenv.cc
-        zstd
-        libxkbcommon
-        vulkan-loader
-        xorg.libX11
-        xorg.libXcursor
-        xorg.libXi
-        xorg.libXrandr
-        alsa-lib
-        wayland
-        glfw-wayland
-        udev
-        pkg-config
-      ];
 
       serviceConfig = {
         ProtectKernelTunables = true;
