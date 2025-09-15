@@ -9,7 +9,7 @@ stdenvNoCC.mkDerivation (final: {
   version = "2.0.11.0";
 
   src = fetchurl {
-    url = "https://git.catornot.net/?p=u/cat_or_not/titanfall2.git;a=blob;f=titanfall2.zip;h=86dd5d3a9c9bee5013205cb31274cc82a0854d13;hb=refs/heads/main";
+    url = "https://git.catornot.net/?p=u/cat_or_not/titanfall2.git;a=blob;f=titanfall2.zip;h=86dd5d3a9c9bee5013205cb31274cc82a0854d13;hb=7c5e98b7e48daa2886100452b348a5b0c0350414";
     sha256 = "sha256-w16y5Jhfw8MuN4r7hKZmSJsDvCBF4OW4Aw3UJJUrP0s=";
   };
 
@@ -23,7 +23,7 @@ stdenvNoCC.mkDerivation (final: {
 
   meta = {
     description = "titanfall2 server files";
-    homepage = "";
+    homepage = "https://git.catornot.net/?p=u/cat_or_not/titanfall2.git;a=summary";
     license = lib.licenses.unfree;
     platforms = [ "x86_64-linux" ];
     maintainers = [ ];
