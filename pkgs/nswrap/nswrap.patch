@@ -1,5 +1,5 @@
 diff --git a/nswrap/nswrap.c b/nswrap/nswrap.c
-index 9c700d1081c..4617ebfd672 100644
+index 9c700d1081c..16c5f3313eb 100644
 --- a/nswrap/nswrap.c
 +++ b/nswrap/nswrap.c
 @@ -856,14 +856,9 @@ int main(int argc, char **argv) {
@@ -37,6 +37,15 @@ index 9c700d1081c..4617ebfd672 100644
          wine_argv[i++] = strdup("NorthstarLauncher.exe");
          for (int j = 1; j < argc; j++) {
              /* first argument is -dedicated */
+@@ -1113,7 +1108,7 @@ int main(int argc, char **argv) {
+         wine_envp[i++] = strdup("HOSTNAME=none");
+         wine_envp[i++] = strdup(getenve("HOME") ?: "HOME=/");
+         wine_envp[i++] = strdup(getenve("WINEDEBUG") ?: "WINEDEBUG=+msgbox,fixme-secur32,fixme-bcrypt,fixme-ver,err-wldap32,err-kerberos,err-ntlm");
+-        wine_envp[i++] = strdup("WINEARCH=win64");
++        // wine_envp[i++] = strdup("WINEARCH=win64");
+         if (state.cfg.extwine) {
+             wine_envp[i++] = strdup(getenve("PATH") ?: "PATH=/usr/local/bin:/usr/bin:/bin");
+             if (getenve("LD_LIBRARY_PATH")) wine_envp[i++] = strdup(getenve("LD_LIBRARY_PATH"));
 @@ -1125,7 +1120,7 @@ int main(int argc, char **argv) {
              if (getenve("WINESERVER")) wine_envp[i++] = strdup(getenve("WINESERVER"));
              if (getenve("WINELOADER")) wine_envp[i++] = strdup(getenve("WINELOADER"));

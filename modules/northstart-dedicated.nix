@@ -133,12 +133,12 @@ in
         mkdir -p ${cfg.stateDir}/.cache/fontconfig
         mkdir -p ${cfg.stateDir}/wine/prefix
 
-        cp -u -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine
-        cp -p -u -r ${cfg.package-nswrap}/bin/nswrap ${cfg.stateDir}/bin/nswrap
-        cp -p -u -r ${
+        install -m775 -D ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine
+        install -m775 -D ${cfg.package-nswrap}/bin/nswrap ${cfg.stateDir}/bin/nswrap
+        install -m775 ${
           (lib.getExe (cfg.package-nswine-run.override { nswine-env-path = "${cfg.stateDir}/wine"; }))
         } ${cfg.stateDir}/wine/nsrun
-        cp -u -r ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2
+        install -m775 -D ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2
 
 
       '';
@@ -163,10 +163,10 @@ in
         ProtectHostname = "yes";
         NoNewPrivileges = "yes";
 
-        Environment = [
-          "LIBGL_ALWAYS_SOFTWARE=1"
-          "GALLIUM_DRIVER=llvmpipe"
-        ];
+        # Environment = [
+        #   "LIBGL_ALWAYS_SOFTWARE=1"
+        #   "GALLIUM_DRIVER=llvmpipe"
+        # ];
 
         Type = "exec";
         User = cfg.user;

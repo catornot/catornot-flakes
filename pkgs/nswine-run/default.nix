@@ -12,11 +12,12 @@ writers.writeRustBin "nswine-run" { } # rust
       println!("wrapper startup!");
 
       let envs = [
-        ("WINEARCH", r#"win64 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\""#),
+        // ("WINEARCH", r#"win64"#),
+        ("WINEDLLOVERRIDES", r#""mscoree,mshtml,winemenubuilder.exe=\""#),
         ("WINEPREFIX", "${nswine-env-path}"),
         ("NSWRAP_RUNTIME", "${nswine-env-path}"),
         ("NSWRAP_DEBUG", "1"),
-        ("NSWRAP_EXTWINE", "0"),
+        ("NSWRAP_EXTWINE", "1"),
         ("PATH", "${nswine-env-path}"),
       ];
 

@@ -1,6 +1,6 @@
 {
   stdenvNoCC,
-  wine,
+  wineWowPackages,
   xvfb-run,
   lib,
   writeScriptBin,
@@ -9,7 +9,7 @@
   buildGoModule,
 }@inputs:
 let
-  wine-custom = inputs.wine.overrideAttrs (old: {
+  wine-custom = inputs.wineWowPackages.full.overrideAttrs (old: {
     src = fetchFromGitHub {
       owner = "pg9182";
       repo = "nsdockerwine2";
@@ -56,7 +56,7 @@ stdenvNoCC.mkDerivation {
   src = ./.;
 
   nativeBuildInputs = [
-    wine64
+    # wine64
     nswine
   ];
   buildInputs = [
@@ -65,7 +65,7 @@ stdenvNoCC.mkDerivation {
   phases = [ "buildPhase" ];
   buildPhase = "
       # alias wine64=${wine64}/bin/wine
-      export WINEARCH=win64 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\"
+      export WINEARCH=win32 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\"
       export WINEPREFIX=$out/wine
       mkdir -p $out/wine
       mkdir -p $out/wine/bin
@@ -90,8 +90,10 @@ stdenvNoCC.mkDerivation {
       mkdir $TMP/share 
       cp -r ${wine64}/bin/* $TMP/bin 
       cp -r ${wine64}/bin/* $out/bin 
-      cp -r ${wine64}/lib/wine/x86_64-unix $TMP/lib/wine/x86_64-unix
-      cp -r ${wine64}/lib/wine/x86_64-windows/* $TMP/lib/wine/x86_64-windows
+      # cp -r ${wine64}/lib/wine/x86_64-unix $TMP/lib/wine/x86_64-unix
+      # cp -r ${wine64}/lib/wine/x86_64-windows/* $TMP/lib/wine/x86_64-windows
+      cp -r ${wine64}/lib/wine/i386-unix $TMP/lib/wine/x86_64-unix
+      cp -r ${wine64}/lib/wine/i386-windows/* $TMP/lib/wine/x86_64-windows
       cp -r ${wine64}/include/* $TMP/include
       cp -r ${wine64}/share/* $TMP/share
       
