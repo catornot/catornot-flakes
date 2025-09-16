@@ -21,8 +21,6 @@
         let
         in
         rec {
-          papa-src = pkgs.callPackage ./papa-src { };
-          papa = pkgs.callPackage ./papa { };
           titanfall2 = pkgs.callPackage ./titanfall2 { };
           northstar = pkgs.callPackage ./northstar { };
           nswrap = pkgs.callPackage ./nswrap { };
