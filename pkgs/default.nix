@@ -45,7 +45,7 @@
             northstar = northstar;
           };
           sere = pkgs.callPackage ./sere { inherit pkgs-win; };
-          tf2vpk = pkgs.callPackage ./tf2vpk {};
+          tf2vpk = pkgs.callPackage ./tf2vpk { };
         };
     };
 }

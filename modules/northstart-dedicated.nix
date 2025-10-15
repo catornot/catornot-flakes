@@ -117,8 +117,17 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
 
+      path = [ cfg.package-nswrap cfg.package-nswine-run pkgs.libGL ];
+
       # TODO: should probably delete these files on restart?
       preStart = ''
+        # cleanup from previous runs
+        # probably not the best tbh
+        rm -r ${cfg.stateDir}/wine/bin 2>/dev/null || true
+        rm -r ${cfg.stateDir}/bin 2>/dev/null || true
+        rm ${cfg.stateDir}/bin/nswrap 2>/dev/null || true
+        rm ${cfg.stateDir}/wine/nsrun 2>/dev/null || true
+
         mkdir -p ${cfg.stateDir}/wine
         mkdir -p ${cfg.stateDir}/bin
         mkdir -p ${cfg.stateDir}/titanfall2
@@ -133,40 +142,40 @@ in
         mkdir -p ${cfg.stateDir}/.cache/fontconfig
         mkdir -p ${cfg.stateDir}/wine/prefix
 
-        install -m775 -D ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine
-        install -m775 -D ${cfg.package-nswrap}/bin/nswrap ${cfg.stateDir}/bin/nswrap
-        install -m775 ${
+        cp -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine || true
+        cp ${cfg.package-nswrap}/bin/nswrap ${cfg.stateDir}/bin/nswrap
+        cp ${
           (lib.getExe (cfg.package-nswine-run.override { nswine-env-path = "${cfg.stateDir}/wine"; }))
         } ${cfg.stateDir}/wine/nsrun
-        install -m775 -D ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2
-
-
+        cp -r ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2 || true
       '';
 
-      # like this?
-      postStop = ''
-        # find ${cfg.stateDir} -xtype l -delete
-        # rm -r ${cfg.stateDir}/titanfall2
-        # rm -r ${cfg.stateDir}/wine
-        # rm -r ${cfg.stateDir}/bin
-        rm ${cfg.stateDir}/bin/nswrap
-        rm ${cfg.stateDir}/wine/nsrun
-        rm -r ${cfg.stateDir}/wine/bin
-      '';
+      # # like this?
+      # postStop = ''
+      #   # # find ${cfg.stateDir} -xtype l -delete
+      #   # rm -r ${cfg.stateDir}/titanfall2 2>/dev/null || true
+      #   # rm -r ${cfg.stateDir}/wine/bin 2>/dev/null || true
+      #   # rm -r ${cfg.stateDir}/bin 2>/dev/null || true
+      #   # rm ${cfg.stateDir}/bin/nswrap || true
+      #   # rm ${cfg.stateDir}/wine/nsrun || true
+      #   # # rm -r ${cfg.stateDir}/wine/bin || true
+      # '';
 
       serviceConfig = {
         ProtectKernelTunables = true;
         ProtectKernelModules = true;
         ProtectControlGroups = true;
+        PrivateTmp = true;
 
         PrivateDevices = "yes";
         ProtectHostname = "yes";
-        NoNewPrivileges = "yes";
 
-        # Environment = [
-        #   "LIBGL_ALWAYS_SOFTWARE=1"
-        #   "GALLIUM_DRIVER=llvmpipe"
-        # ];
+        # NoNewPrivileges = "yes";
+
+        Environment = [
+          "LIBGL_ALWAYS_SOFTWARE=1"
+          "GALLIUM_DRIVER=llvmpipe"
+        ];
 
         Type = "exec";
         User = cfg.user;
@@ -182,6 +191,7 @@ in
               else
                 "$(cat ${cfg.settings.passwordFile})"
             }"''
+            "-port ${builtins.toString cfg.port}"
           ]
           ++ cfg.extraSettings
           ++ [

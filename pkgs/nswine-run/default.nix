@@ -2,6 +2,7 @@
   nswrap,
   writers,
   nswine-env-path,
+  xvfb-run,
 }:
 writers.writeRustBin "nswine-run" { } # rust
   ''
@@ -12,8 +13,9 @@ writers.writeRustBin "nswine-run" { } # rust
       println!("wrapper startup!");
 
       let envs = [
-        // ("WINEARCH", r#"win64"#),
+        ("WINEARCH", r#"win64"#),
         ("WINEDLLOVERRIDES", r#""mscoree,mshtml,winemenubuilder.exe=\""#),
+        ("WINEDEBUG", r#"+msgbox,fixme-secur32,fixme-bcrypt,fixme-ver,err-wldap32,err-kerberos,err-ntlm"#),
         ("WINEPREFIX", "${nswine-env-path}"),
         ("NSWRAP_RUNTIME", "${nswine-env-path}"),
         ("NSWRAP_DEBUG", "1"),
@@ -30,9 +32,13 @@ writers.writeRustBin "nswine-run" { } # rust
 
       let args = args.inspect(|arg| println!("with arg: {arg}")).collect::<Vec<_>>();
       
-      std::process::Command::new("${nswrap}/bin/nswrap".to_string())
+      // std::process::Command::new("${nswrap}/bin/nswrap".to_string())
+      std::process::Command::new("${nswine-env-path}/bin/wine".to_string())
+      // std::process::Command::new("${xvfb-run}/bin/xvfb-run".to_string())
+        // .arg("${nswine-env-path}/bin/wine")
         .envs(envs)
         .current_dir(path_arg)
+        .arg("NorthstarLauncher.exe")
         .arg("-dedicated")
         .args(args)
         .spawn().map_err(|err| format!("can't spawn: {err:?}"))?

@@ -10,12 +10,14 @@ stdenv.mkDerivation (final: {
   pname = "sere";
   version = "0.1.0";
 
-  src = "${fetchFromGitHub {
-    owner = "RoyalBlue1";
-    repo = "SERE";
-    rev = "9f745176135474e3aa3ded0f4c479021f5e22127";
-    sha256 = "sha256-CRnmlYNXCPJN53C0vcYeeICKRrgFwXxIdZX6mKP9R6Y=";
-  }}/SERE";
+  src = "${
+    fetchFromGitHub {
+      owner = "RoyalBlue1";
+      repo = "SERE";
+      rev = "9f745176135474e3aa3ded0f4c479021f5e22127";
+      sha256 = "sha256-CRnmlYNXCPJN53C0vcYeeICKRrgFwXxIdZX6mKP9R6Y=";
+    }
+  }/SERE";
 
   nativeBuildInputs = [
     wineWow64Packages.waylandFull

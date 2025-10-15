@@ -1,6 +1,7 @@
 {
   stdenvNoCC,
   wineWowPackages,
+  wineWow64Packages,
   xvfb-run,
   lib,
   writeScriptBin,
@@ -21,11 +22,12 @@ let
 
     meta.mainProgram = "wine";
   });
-  wine64 = symlinkJoin {
-    name = "wine64";
+  wine-ns = symlinkJoin {
+    name = "wine-ns";
     paths = [
-      wine-custom
+      # wine-custom
       # inputs.wine64
+      wineWow64Packages.base
     ];
   };
   wine-name = "wine";
@@ -64,49 +66,78 @@ stdenvNoCC.mkDerivation {
 
   phases = [ "buildPhase" ];
   buildPhase = "
-      # alias wine64=${wine64}/bin/wine
-      export WINEARCH=win32 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\"
+      export XDG_CACHE_HOME=\"\$(mktemp -d)\"      
+
+      export WINEARCH=win64 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\"
       export WINEPREFIX=$out/wine
       mkdir -p $out/wine
       mkdir -p $out/wine/bin
-      ${lib.getExe' wine64 wine-name} wineboot --init
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine' /v 'Version' /t REG_SZ /d 'win10' /f
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Audio' /t REG_SZ /d '' /f
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine\\WineDbg' /v 'ShowCrashDialog' /t REG_DWORD /d 0 /f
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Graphics' /t REG_SZ /d 'null' /f
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mscoree' /t REG_SZ /d '' /f
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mshtml' /t REG_SZ /d '' /f
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'winemenubuilder' /t REG_SZ /d '' /f
-      ${lib.getExe' wine64 wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'd3d11' /t REG_SZ /d 'native' /f
-      ${lib.getExe' wine64 wine-name} wineboot --shutdown --force
-      ${lib.getExe' wine64 wine-name} wineboot --kill --force
+      # ${lib.getExe' wine-ns wine-name} wineboot --init
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine' /v 'Version' /t REG_SZ /d 'win10' /f
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Audio' /t REG_SZ /d '' /f
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine\\WineDbg' /v 'ShowCrashDialog' /t REG_DWORD /d 0 /f
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Graphics' /t REG_SZ /d 'null' /f
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mscoree' /t REG_SZ /d '' /f
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mshtml' /t REG_SZ /d '' /f
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'winemenubuilder' /t REG_SZ /d '' /f
+      # ${lib.getExe' wine-ns wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'd3d11' /t REG_SZ /d 'native' /f
+      # ${lib.getExe' wine-ns wine-name} wineboot --shutdown --force
+      # ${lib.getExe' wine-ns wine-name} wineboot --kill --force
 
-      mkdir $TMP/bin
-      mkdir $out/bin
-      mkdir $TMP/lib
-      mkdir $TMP/lib/wine
-      mkdir $TMP/lib/wine/x86_64-windows
-      mkdir $TMP/include 
-      mkdir $TMP/share 
-      cp -r ${wine64}/bin/* $TMP/bin 
-      cp -r ${wine64}/bin/* $out/bin 
-      # cp -r ${wine64}/lib/wine/x86_64-unix $TMP/lib/wine/x86_64-unix
-      # cp -r ${wine64}/lib/wine/x86_64-windows/* $TMP/lib/wine/x86_64-windows
-      cp -r ${wine64}/lib/wine/i386-unix $TMP/lib/wine/x86_64-unix
-      cp -r ${wine64}/lib/wine/i386-windows/* $TMP/lib/wine/x86_64-windows
-      cp -r ${wine64}/include/* $TMP/include
-      cp -r ${wine64}/share/* $TMP/share
+      mkdir -p $TMP/bin
+      mkdir -p $out/bin
+      mkdir -p $TMP/lib
+      mkdir -p $TMP/out
+      mkdir -p $TMP/lib/wine
+      mkdir -p $TMP/lib/wine/x86_64-windows
+      mkdir -p $TMP/include 
+      mkdir -p $TMP/share 
+      cp -r ${wine-ns}/bin/* $TMP/bin 
+      cp -r ${wine-ns}/lib/wine/x86_64-unix $TMP/lib/wine/x86_64-unix
+      cp -r ${wine-ns}/lib/wine/x86_64-windows/* $TMP/lib/wine/x86_64-windows
+      # cp -r ${wine-ns}/lib/wine/x86_64-unix $TMP/lib/wine/i386-unix
+      # cp -r ${wine-ns}/lib/wine/x86_64-windows/* $TMP/lib/wine/i386-windows
+      # cp -r ${wine-ns}/lib/wine/i386-unix $TMP/lib/wine/x86_64-unix
+      # cp -r ${wine-ns}/lib/wine/i386-windows/* $TMP/lib/wine/x86_64-windows
+      # cp -r ${wine-ns}/lib/wine/i386-unix $TMP/lib/wine/i386-unix
+      # cp -r ${wine-ns}/lib/wine/i386-windows/* $TMP/lib/wine/i386-windows
+      cp -r ${wine-ns}/include/* $TMP/include
+      cp -r ${wine-ns}/share/* $TMP/share
       
-      # rm $TMP/lib/wine/x86_64-windows/explorer.exe
-      # cp ${wine64}/lib/wine/x86_64-windows/explorer.exe $TMP/lib/wine/x86_64-windows/explorer.exe
-      # chmod 777 $TMP/lib/wine/x86_64-windows/explorer.exe
-      # NSWINE_UNSAFE=1 nswine --prefix $TMP
+      rm $TMP/lib/wine/x86_64-windows/explorer.exe
+      cp ${wine-ns}/lib/wine/x86_64-windows/explorer.exe $TMP/lib/wine/x86_64-windows/explorer.exe
+      chmod 777 $TMP/lib/wine/x86_64-windows/explorer.exe
+      NSWINE_UNSAFE=1 nswine --prefix $TMP --output $out/wine2
+
+      
+      $TMP/bin/${wine-name} wineboot --init
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine' /v 'Version' /t REG_SZ /d 'win10' /f
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Audio' /t REG_SZ /d '' /f
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine\\WineDbg' /v 'ShowCrashDialog' /t REG_DWORD /d 0 /f
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Graphics' /t REG_SZ /d 'null' /f
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mscoree' /t REG_SZ /d '' /f
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mshtml' /t REG_SZ /d '' /f
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'winemenubuilder' /t REG_SZ /d '' /f
+      $TMP/bin/${wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'd3d11' /t REG_SZ /d 'native' /f
+      $TMP/bin/${wine-name} wineboot --shutdown --force
+      $TMP/bin/${wine-name} wineboot --kill --force
+      
+      rm $out/wine/dosdevices/z: # hoppefully 
+
+      # hmm
+      rm $out/wine/drive_c/windows/explorer.exe
+      cp $TMP/lib/wine/x86_64-windows/explorer.exe $out/wine/drive_c/windows/explorer.exe
+
+      # remove wine gecko
+      rm -r $out/wine/drive_c/windows/system32/gecko
 
       cp -r $TMP/lib $out/lib
-      ln -s $out/lib $out/lib64
 
+      cp -r ${wine-ns}/bin/* $out/bin/ 
+      # cp -r ${wine-ns}/bin/wineserver $out/bin/wineserver 
       # rm $out/bin/${wine-name}
-      # cp ${writeScriptBin wine-name ''${xvfb-run}/bin/xvfb-run ${wine64}/bin/${wine-name} "$@"''}/bin/${wine-name} $out/bin/${wine-name}
+      # install -m775 -D ${wine-ns}/bin/${wine-name} $out/bin/${wine-name}
+      # cp ${writeScriptBin wine-name ''${xvfb-run}/bin/xvfb-run ${wine-ns}/bin/${wine-name} "$@"''}/bin/${wine-name} $out/bin/${wine-name}
   ";
 }
 
