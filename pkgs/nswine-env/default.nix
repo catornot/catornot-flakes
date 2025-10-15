@@ -27,7 +27,7 @@ let
     paths = [
       # wine-custom
       # inputs.wine64
-      wineWow64Packages.base
+      wineWow64Packages.stable
     ];
   };
   wine-name = "wine";

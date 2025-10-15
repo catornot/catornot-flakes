@@ -37,7 +37,7 @@
           nswrap = pkgs.callPackage ./nswrap { };
           nswine-run = pkgs.callPackage ./nswine-run {
             nswrap = nswrap;
-            nswine-env-path = pkgs.lib.fakeHash;
+            nswine-env-path = nswine-env;
           };
           nswine-env = pkgs.callPackage ./nswine-env { };
           northstar-dedicated = pkgs.callPackage ./northstar-dedicated {
