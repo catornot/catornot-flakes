@@ -1,6 +1,6 @@
 {
   stdenvNoCC,
-  wineWowPackages,
+  wine,
   wineWow64Packages,
   xvfb-run,
   lib,
@@ -10,7 +10,7 @@
   buildGoModule,
 }@inputs:
 let
-  wine-custom = inputs.wineWowPackages.full.overrideAttrs (old: {
+  wine-custom = inputs.wineWow64Packages.stable.overrideAttrs (old: {
     src = fetchFromGitHub {
       owner = "pg9182";
       repo = "nsdockerwine2";
@@ -25,9 +25,9 @@ let
   wine-ns = symlinkJoin {
     name = "wine-ns";
     paths = [
-      # wine-custom
+      wine-custom
       # inputs.wine64
-      wineWow64Packages.stable
+      # wineWow64Packages.stable
     ];
   };
   wine-name = "wine";
@@ -104,10 +104,10 @@ stdenvNoCC.mkDerivation {
       cp -r ${wine-ns}/include/* $TMP/include
       cp -r ${wine-ns}/share/* $TMP/share
       
-      rm $TMP/lib/wine/x86_64-windows/explorer.exe
-      cp ${wine-ns}/lib/wine/x86_64-windows/explorer.exe $TMP/lib/wine/x86_64-windows/explorer.exe
-      chmod 777 $TMP/lib/wine/x86_64-windows/explorer.exe
-      NSWINE_UNSAFE=1 nswine --prefix $TMP --output $out/wine2
+      # rm $TMP/lib/wine/x86_64-windows/explorer.exe
+      # cp ${wine-ns}/lib/wine/x86_64-windows/explorer.exe $TMP/lib/wine/x86_64-windows/explorer.exe
+      # chmod 777 $TMP/lib/wine/x86_64-windows/explorer.exe
+      # NSWINE_UNSAFE=1 nswine --prefix $TMP --output $out/wine2
 
       
       $TMP/bin/${wine-name} wineboot --init

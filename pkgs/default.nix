@@ -35,11 +35,13 @@
           titanfall2 = pkgs.callPackage ./titanfall2 { };
           northstar = pkgs.callPackage ./northstar { };
           nswrap = pkgs.callPackage ./nswrap { };
+          nswrap-unpached = pkgs.callPackage ./nswrap { doNotPatch = true; };
           nswine-run = pkgs.callPackage ./nswine-run {
             nswrap = nswrap;
             nswine-env-path = nswine-env;
           };
           nswine-env = pkgs.callPackage ./nswine-env { };
+          nswine = pkgs.callPackage ./nswine { };
           northstar-dedicated = pkgs.callPackage ./northstar-dedicated {
             titanfall2 = titanfall2;
             northstar = northstar;

@@ -1,5 +1,5 @@
 diff --git a/nswrap/nswrap.c b/nswrap/nswrap.c
-index 9c700d1081c..1afc59018dd 100644
+index 9c700d1081c..c75c5cc4e33 100644
 --- a/nswrap/nswrap.c
 +++ b/nswrap/nswrap.c
 @@ -856,14 +856,9 @@ int main(int argc, char **argv) {
@@ -33,7 +33,7 @@ index 9c700d1081c..1afc59018dd 100644
  
          i=0;
 -        wine_argv[i++] = strdup("wine64");
-+        // wine_argv[i++] = strdup("wine");
++        wine_argv[i++] = strdup("wine");
          wine_argv[i++] = strdup("NorthstarLauncher.exe");
          for (int j = 1; j < argc; j++) {
              /* first argument is -dedicated */

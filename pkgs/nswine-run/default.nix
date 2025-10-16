@@ -27,18 +27,19 @@ writers.writeRustBin "nswine-run" { } # rust
       _ = args.next();
       let path_arg = PathBuf::from(args.next().ok_or("include the path to the northstar install pls")?.to_string());
 
+      let nswrap = PathBuf::from("${nswine-env-path}").parent().expect("nswrap nooo").join("bin").join("nswrap");
       println!("tf2 dir is : {} and it exists? {}", path_arg.display(), path_arg.exists());
-      println!("nswrap path is : ${nswrap}/bin/nswrap and it exists? {}", PathBuf::from("${nswrap}/bin/nswrap").exists());
+      println!("nswrap path is : {} and it exists? {}", nswrap.display(), nswrap.exists());
 
       let args = args.inspect(|arg| println!("with arg: {arg}")).collect::<Vec<_>>();
       
-      // std::process::Command::new("${nswrap}/bin/nswrap".to_string())
-      std::process::Command::new("${nswine-env-path}/bin/wine".to_string())
+      std::process::Command::new(nswrap)
+      // std::process::Command::new("${nswine-env-path}/bin/wine".to_string())
       // std::process::Command::new("${xvfb-run}/bin/xvfb-run".to_string())
         // .arg("${nswine-env-path}/bin/wine")
         .envs(envs)
         .current_dir(path_arg)
-        .arg("NorthstarLauncher.exe")
+        // .arg("NorthstarLauncher.exe")
         .arg("-dedicated")
         .args(args)
         .spawn().map_err(|err| format!("can't spawn: {err:?}"))?

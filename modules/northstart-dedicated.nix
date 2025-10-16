@@ -117,7 +117,11 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
 
-      path = [ cfg.package-nswrap cfg.package-nswine-run pkgs.libGL ];
+      path = [
+        cfg.package-nswrap
+        cfg.package-nswine-run
+        pkgs.libGL
+      ];
 
       # TODO: should probably delete these files on restart?
       preStart = ''

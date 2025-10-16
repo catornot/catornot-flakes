@@ -5,6 +5,7 @@
   libunwind,
   libgnurl,
   applyPatches,
+  doNotPatch ? false,
 }:
 stdenv.mkDerivation {
   pname = "nswrap";
@@ -17,9 +18,13 @@ stdenv.mkDerivation {
       rev = "c412fb15ef20ebb6ba674796ac527a558942772a";
       sha256 = "sha256-Y0oDQYUnsChdRyId73paTTgJ2k5n0Y3Cn1Y2TeHdwDo=";
     };
-    patches = [
-      ./nswrap.patch
-    ];
+    patches =
+      if doNotPatch then
+        [ ]
+      else
+        [
+          ./nswrap.patch
+        ];
   };
 
   nativeBuildInputs = [
