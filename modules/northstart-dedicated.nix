@@ -118,6 +118,7 @@ in
       wantedBy = [ "multi-user.target" ];
 
       path = [
+        cfg.package-nswine-env
         cfg.package-nswrap
         cfg.package-nswine-run
         pkgs.libGL
@@ -171,15 +172,15 @@ in
         ProtectControlGroups = true;
         PrivateTmp = true;
 
-        PrivateDevices = "yes";
+        # PrivateDevices = "yes";
         ProtectHostname = "yes";
 
         # NoNewPrivileges = "yes";
 
-        Environment = [
-          "LIBGL_ALWAYS_SOFTWARE=1"
-          "GALLIUM_DRIVER=llvmpipe"
-        ];
+        # Environment = [
+        #   "LIBGL_ALWAYS_SOFTWARE=1"
+        #   "GALLIUM_DRIVER=llvmpipe"
+        # ];
 
         Type = "exec";
         User = cfg.user;
