@@ -24,12 +24,25 @@ let
 
     # meta.mainProgram = "wine";
   });
+  wine-real = inputs.wineWow64Packages.base.overrideAttrs (old: {
+    src = fetchFromGitHub {
+      owner = "pg9182";
+      repo = "nsdockerwine2";
+      rev = "885446556ce443b496e368b8f2c68807dcc7df0f";
+      sha256 = "sha256-6n06LO36Epq3c1mWH1CJJEI8Hk/zObIttoiDPUGIBUQ=";
+    };
+
+    patches = [ ];
+
+    # meta.mainProgram = "wine";
+  });
   wine-ns = symlinkJoin {
     name = "wine-ns";
     paths = [
       # wine-custom
       # inputs.wine64
-      wineWow64Packages.stable
+      # wineWow64Packages.stable
+      wine-real
     ];
   };
   wine-name = "wine";
@@ -126,7 +139,7 @@ let
   };
 in
 stdenvNoCC.mkDerivation {
-  pname = "nswine-env";
+  pname = "nswine";
   version = "0.1.0";
 
   src = ./.;
