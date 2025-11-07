@@ -1,0 +1,14 @@
+diff --git a/src-tauri/tauri.conf.json b/src-tauri/tauri.conf.json
+index 05880b1..b85cc0b 100644
+--- a/src-tauri/tauri.conf.json
++++ b/src-tauri/tauri.conf.json
+@@ -24,8 +24,7 @@
+   },
+   "bundle": {
+     "active": true,
+-    "createUpdaterArtifacts": "v1Compatible",
+-    "targets": "all",
++    "targets": "app",
+     "icon": [
+       "icons/32x32.png",
+       "icons/128x128.png",
