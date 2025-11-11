@@ -117,13 +117,6 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
 
-      path = [
-        cfg.package-nswine-env
-        cfg.package-nswrap
-        cfg.package-nswine-run
-        pkgs.libGL
-      ];
-
       # TODO: should probably delete these files on restart?
       preStart = ''
         # cleanup from previous runs
@@ -170,17 +163,16 @@ in
         ProtectKernelTunables = true;
         ProtectKernelModules = true;
         ProtectControlGroups = true;
-        PrivateTmp = true;
+        # PrivateTmp = true;
 
         # PrivateDevices = "yes";
-        ProtectHostname = "yes";
+        # ProtectHostname = "yes";
 
         # NoNewPrivileges = "yes";
 
-        # Environment = [
-        #   "LIBGL_ALWAYS_SOFTWARE=1"
-        #   "GALLIUM_DRIVER=llvmpipe"
-        # ];
+        Environment = [
+          "XDG_RUNTIME_DIR=${lib.escapeShellArg cfg.stateDir}"
+        ];
 
         Type = "exec";
         User = cfg.user;

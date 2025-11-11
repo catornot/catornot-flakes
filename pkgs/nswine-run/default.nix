@@ -18,11 +18,12 @@ writers.writeRustBin "nswine-run" { } # rust
         ("WINEARCH", r#"win64"#),
         ("WINEDLLOVERRIDES", r#""mscoree,mshtml,winemenubuilder.exe=\""#),
         ("WINEDEBUG", r#"+msgbox,fixme-secur32,fixme-bcrypt,fixme-ver,err-wldap32,err-kerberos,err-ntlm"#),
-        // ("WINEPREFIX", "${nswine-env-path}"),
+        ("WINEPREFIX", "${nswine-env-path}"),
         ("NSWRAP_RUNTIME", "${nswine-env-path}"),
         ("NSWRAP_DEBUG", "1"),
         ("NSWRAP_EXTWINE", "1"),
         // ("PATH", "${nswine-env-path}"),
+        ("XDG_RUNTIME_DIR", "${nswine-env-path}")
       ];
 
       let mut args = env::args();
@@ -44,7 +45,7 @@ writers.writeRustBin "nswine-run" { } # rust
         // .arg("wine")
         .envs(envs)
         .current_dir(path_arg)
-        //  .arg("wine")
+        // .arg("wine")
         .arg("NorthstarLauncher.exe")
         .arg("-dedicated")
         .args(args)

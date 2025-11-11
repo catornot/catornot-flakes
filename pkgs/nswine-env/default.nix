@@ -1,7 +1,6 @@
 {
   stdenvNoCC,
   nswine,
-  wine64,
   lib,
 }:
 let
