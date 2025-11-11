@@ -117,6 +117,14 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
 
+      path = [
+        pkgs.vulkan-tools
+        pkgs.vulkan-loader
+        pkgs.vulkan-validation-layers
+        pkgs.mesa
+        pkgs.samba4Full
+      ];
+
       # TODO: should probably delete these files on restart?
       preStart = ''
         # cleanup from previous runs
@@ -163,18 +171,36 @@ in
         ProtectKernelTunables = true;
         ProtectKernelModules = true;
         ProtectControlGroups = true;
-        # PrivateTmp = true;
+        # NoNewPrivileges="yes";
+        # ProtectSystem="strict";
+        # ProtectHome="read-only";
+        # PrivateDevices="yes";
+        # RestrictSUIDSGID="yes";
+        # RestrictRealtime="yes";
+        # RestrictNamespaces="yes";
+        # LockPersonality="yes";
+        # MemoryDenyWriteExecute="yes";
+        # PrivateUsers="yes";
+        PrivateTmp = "no";
 
         # PrivateDevices = "yes";
         # ProtectHostname = "yes";
 
         # NoNewPrivileges = "yes";
+        ReadWritePaths = "/tmp /dev/shm";
+        TemporaryFileSystem = "/run:ro";
 
         Environment = [
           "XDG_RUNTIME_DIR=${lib.escapeShellArg cfg.stateDir}"
+          "MESA_LOADER_DRIVER_OVERRIDE=llvmpipe"
+          "GALLIUM_DRIVER=llvmpipe"
+          "LIBGL_ALWAYS_SOFTWARE=1"
+          "DRI_PRIME=0"
+          "WINEDEBUG=-all"
+          "HOME=/var/lib/northstar"
         ];
 
-        Type = "exec";
+        Type = "simple";
         User = cfg.user;
         ExecStart = lib.escapeShellArgs (
           [
@@ -199,6 +225,9 @@ in
             ])
           ]
         );
+
+        # Restart = "always";
+        # RestartSec = "10s";
       };
     };
 

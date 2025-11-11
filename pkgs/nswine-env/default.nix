@@ -2,6 +2,7 @@
   stdenvNoCC,
   nswine,
   lib,
+  xvfb-run,
 }:
 let
   wine-ns = nswine;
@@ -44,6 +45,8 @@ stdenvNoCC.mkDerivation {
 
       # remove wine gecko
       rm -r $out/wine/drive_c/windows/system32/gecko
+
+      rm -r $out/wine/drive_c/windows/syswow64
 
       cp -r ${wine-ns}/lib $out/lib
       cp -r ${wine-ns}/bin/* $out/bin/ 

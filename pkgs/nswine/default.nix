@@ -10,6 +10,7 @@
   symlinkJoin,
   buildGoModule,
   bash,
+  writeText,
 }@inputs:
 let
   wine-custom = inputs.wineWow64Packages.base.overrideAttrs (old: {
@@ -24,7 +25,7 @@ let
 
     # meta.mainProgram = "wine";
   });
-  wine-real = inputs.wineWow64Packages.stable.overrideAttrs (old: {
+  wine-real = inputs.wineWow64Packages.base.overrideAttrs (old: {
     src = fetchFromGitHub {
       owner = "pg9182";
       repo = "nsdockerwine2";
@@ -41,7 +42,7 @@ let
     paths = [
       # wine-custom
       # inputs.wine64
-      wineWow64Packages.stable
+      wineWow64Packages.base
       # wine-real
     ];
   };
@@ -62,79 +63,79 @@ let
     vendorHash = "sha256-8B1nbk0ZaYEuujSsdF+KgXFimQdj8JAujQj0af6ECfM=";
 
     patches = [
-      ./remove_extra.patch
-      # (writeText "patch.patch" ''
-      #   diff --git a/nswine/nswine.go b/nswine/nswine.go
-      #   index 87a462e3660..dc7ae9e24ee 100644
-      #   --- a/nswine.go
-      #   +++ b/nswine.go
-      #   @@ -550,8 +550,8 @@ func run() error {
-         
-      #    	wineEnv := append(os.Environ(), "WINEPREFIX="+*Output, "WINEARCH=win64", "USER=nswrap")
-         
-      #   -	slog.Info("creating wineprefix")
-      #   -	{
-      #   +	if *Vendor {
-      #   +		slog.Info("creating wineprefix")
-      #    		winedebug := "err-ole,fixme-actctx"
-      #    		if *Debug {
-      #    			winedebug += ",+loaddll"
-      #   @@ -571,10 +571,10 @@ func run() error {
-      #    		// there's an i386 binary somewhere getting called by wine.inf, causing wine to try and use the wow64 loader, which we deleted earlier
-      #    	}
-         
-      #   -	slog.Info("disabling automatic wineprefix updates")
-      #   -	if err := os.WriteFile(filepath.Join(*Output, ".update-timestamp"), []byte("disable\n"), 0644); err != nil {
-      #   -		return err
-      #   -	}
-      #   +	// slog.Info("disabling automatic wineprefix updates")
-      #   +	// if err := os.WriteFile(filepath.Join(*Output, ".update-timestamp"), []byte("disable\n"), 0644); err != nil {
-      #   +	// 	return err
-      #   +	// }
-         
-      #    	if *Optimize {
-      #    		// TODO: clean up empty dirs
-      #   @@ -591,22 +591,23 @@ func run() error {
-      #    	}
-         
-      #    	// TODO: remove this
-      #   -	filepath.WalkDir(*Prefix, func(path string, d fs.DirEntry, err error) error {
-      #   -		slog.Debug("wine file", "path", path)
-      #   -		return nil
-      #   -	})
-      #   -	filepath.WalkDir(*Output, func(path string, d fs.DirEntry, err error) error {
-      #   -		slog.Debug("wineprefix file", "path", path)
-      #   -		return nil
-      #   -	})
-      #   +	// filepath.WalkDir(*Prefix, func(path string, d fs.DirEntry, err error) error {
-      #   +	// 	slog.Debug("wine file", "path", path)
-      #   +	// 	return nil
-      #   +	// })
-      #   +	// filepath.WalkDir(*Output, func(path string, d fs.DirEntry, err error) error {
-      #   +	// 	slog.Debug("wineprefix file", "path", path)
-      #   +	// 	return nil
-      #   +	// })
-         
-      #    	// TODO: replace this with a go impl
-      #   -	if tmp, err := exec.Command("du", "-sh", *Prefix).Output(); err == nil {
-      #   -		slog.Info(string(bytes.TrimSpace(tmp)))
-      #   -	}
-      #   -	if tmp, err := exec.Command("du", "-sh", *Output).Output(); err == nil {
-      #   -		slog.Info(string(bytes.TrimSpace(tmp)))
-      #   -	}
-      #   -
-      #   -	return errors.ErrUnsupported
-      #   +	// if tmp, err := exec.Command("du", "-sh", *Prefix).Output(); err == nil {
-      #   +	// 	slog.Info(string(bytes.TrimSpace(tmp)))
-      #   +	// }
-      #   +	// if tmp, err := exec.Command("du", "-sh", *Output).Output(); err == nil {
-      #   +	// 	slog.Info(string(bytes.TrimSpace(tmp)))
-      #   +	// }
-      #   +
-      #   +	// return errors.ErrUnsupported
-      #   +	return nil;
-      #    }
-      # '')
+      # ./remove_extra.patch
+      (writeText "patch.patch" ''
+        diff --git a/nswine/nswine.go b/nswine/nswine.go
+        index 87a462e3660..dc7ae9e24ee 100644
+        --- a/nswine.go
+        +++ b/nswine.go
+        @@ -550,8 +550,8 @@ func run() error {
+
+         	wineEnv := append(os.Environ(), "WINEPREFIX="+*Output, "WINEARCH=win64", "USER=nswrap")
+
+        -	slog.Info("creating wineprefix")
+        -	{
+        +	if *Vendor {
+        +		slog.Info("creating wineprefix")
+         		winedebug := "err-ole,fixme-actctx"
+         		if *Debug {
+         			winedebug += ",+loaddll"
+        @@ -571,10 +571,10 @@ func run() error {
+         		// there's an i386 binary somewhere getting called by wine.inf, causing wine to try and use the wow64 loader, which we deleted earlier
+         	}
+
+        -	slog.Info("disabling automatic wineprefix updates")
+        -	if err := os.WriteFile(filepath.Join(*Output, ".update-timestamp"), []byte("disable\n"), 0644); err != nil {
+        -		return err
+        -	}
+        +	// slog.Info("disabling automatic wineprefix updates")
+        +	// if err := os.WriteFile(filepath.Join(*Output, ".update-timestamp"), []byte("disable\n"), 0644); err != nil {
+        +	// 	return err
+        +	// }
+
+         	if *Optimize {
+         		// TODO: clean up empty dirs
+        @@ -591,22 +591,23 @@ func run() error {
+         	}
+
+         	// TODO: remove this
+        -	filepath.WalkDir(*Prefix, func(path string, d fs.DirEntry, err error) error {
+        -		slog.Debug("wine file", "path", path)
+        -		return nil
+        -	})
+        -	filepath.WalkDir(*Output, func(path string, d fs.DirEntry, err error) error {
+        -		slog.Debug("wineprefix file", "path", path)
+        -		return nil
+        -	})
+        +	// filepath.WalkDir(*Prefix, func(path string, d fs.DirEntry, err error) error {
+        +	// 	slog.Debug("wine file", "path", path)
+        +	// 	return nil
+        +	// })
+        +	// filepath.WalkDir(*Output, func(path string, d fs.DirEntry, err error) error {
+        +	// 	slog.Debug("wineprefix file", "path", path)
+        +	// 	return nil
+        +	// })
+
+         	// TODO: replace this with a go impl
+        -	if tmp, err := exec.Command("du", "-sh", *Prefix).Output(); err == nil {
+        -		slog.Info(string(bytes.TrimSpace(tmp)))
+        -	}
+        -	if tmp, err := exec.Command("du", "-sh", *Output).Output(); err == nil {
+        -		slog.Info(string(bytes.TrimSpace(tmp)))
+        -	}
+        -
+        -	return errors.ErrUnsupported
+        +	// if tmp, err := exec.Command("du", "-sh", *Prefix).Output(); err == nil {
+        +	// 	slog.Info(string(bytes.TrimSpace(tmp)))
+        +	// }
+        +	// if tmp, err := exec.Command("du", "-sh", *Output).Output(); err == nil {
+        +	// 	slog.Info(string(bytes.TrimSpace(tmp)))
+        +	// }
+        +
+        +	// return errors.ErrUnsupported
+        +	return nil;
+         }
+      '')
     ];
   };
 in
@@ -193,13 +194,13 @@ stdenvNoCC.mkDerivation {
 
       cp -r ${wine-ns}/bin/* $out/bin/ 
       # cp -r ${wine-ns}/bin/wineserver $out/bin/wineserver 
-      rm $out/bin/${wine-name}
+      # rm $out/bin/${wine-name}
       # install -m775 -D ${wine-ns}/bin/${wine-name} $out/bin/${wine-name}
-      cp ${writeScriptBin wine-name ''
-        #!${lib.getExe bash}
-        ${xvfb-run}/bin/xvfb-run ${wine-ns}/bin/${wine-name} "$@"
-      ''}/bin/${wine-name} $out/bin/${wine-name}
-      chmod 555 $out/bin/${wine-name}
+      # cp ${writeScriptBin wine-name ''
+      #   #!${lib.getExe bash}
+      #   ${xvfb-run}/bin/xvfb-run ${wine-ns}/bin/${wine-name} "$@"
+      # ''}/bin/${wine-name} $out/bin/${wine-name}
+      # chmod 555 $out/bin/${wine-name}      
   ";
 }
 
