@@ -42,7 +42,8 @@
           };
           nswine-run-local = pkgs.callPackage ./nswine-run {
             nswrap = nswrap;
-            nswine-env-path = "wine";
+            nswine-env-path = nswine;
+            isLocal = true;
           };
           nswine-env = pkgs.callPackage ./nswine-env { inherit nswine; };
           nswine = pkgs.callPackage ./nswine { };

@@ -5,6 +5,7 @@
   xvfb-run,
   bash,
   lib,
+  isLocal ? false,
 }:
 writers.writeRustBin "nswine-run" { } # rust
   ''
@@ -18,7 +19,7 @@ writers.writeRustBin "nswine-run" { } # rust
         ("WINEARCH", r#"win64"#),
         ("WINEDLLOVERRIDES", r#""mscoree,mshtml,winemenubuilder.exe=\""#),
         ("WINEDEBUG", r#"+msgbox,fixme-secur32,fixme-bcrypt,fixme-ver,err-wldap32,err-kerberos,err-ntlm"#),
-        ("WINEPREFIX", "${nswine-env-path}"),
+        ${if isLocal then "" else ''("WINEPREFIX", "${nswine-env-path}"),''}
         ("NSWRAP_RUNTIME", "${nswine-env-path}"),
         ("NSWRAP_DEBUG", "1"),
         ("NSWRAP_EXTWINE", "1"),
