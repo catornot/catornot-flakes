@@ -117,14 +117,6 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
 
-      path = [
-        pkgs.vulkan-tools
-        pkgs.vulkan-loader
-        pkgs.vulkan-validation-layers
-        pkgs.mesa
-        pkgs.samba4Full
-      ];
-
       # TODO: should probably delete these files on restart?
       preStart = ''
         # cleanup from previous runs
@@ -132,13 +124,12 @@ in
         rm -r ${cfg.stateDir}/wine/bin 2>/dev/null || true
         rm -r ${cfg.stateDir}/bin 2>/dev/null || true
         rm ${cfg.stateDir}/bin/nswrap 2>/dev/null || true
-        rm ${cfg.stateDir}/wine/nsrun 2>/dev/null || true
+        rm ${cfg.stateDir}/wine 2>/dev/null || true
+        rm ${cfg.stateDir}/titanfall2 2>/dev/null || true
 
         mkdir -p ${cfg.stateDir}/wine
         mkdir -p ${cfg.stateDir}/bin
         mkdir -p ${cfg.stateDir}/titanfall2
-
-        # chmod 662 ${cfg.stateDir}/titanfall2
 
         mkdir -p ${cfg.stateDir}/titanfall2/R2Northstar
         mkdir -p ${cfg.stateDir}/titanfall2/R2Northstar/logs
@@ -155,17 +146,6 @@ in
         } ${cfg.stateDir}/wine/nsrun
         cp -r ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2 || true
       '';
-
-      # # like this?
-      # postStop = ''
-      #   # # find ${cfg.stateDir} -xtype l -delete
-      #   # rm -r ${cfg.stateDir}/titanfall2 2>/dev/null || true
-      #   # rm -r ${cfg.stateDir}/wine/bin 2>/dev/null || true
-      #   # rm -r ${cfg.stateDir}/bin 2>/dev/null || true
-      #   # rm ${cfg.stateDir}/bin/nswrap || true
-      #   # rm ${cfg.stateDir}/wine/nsrun || true
-      #   # # rm -r ${cfg.stateDir}/wine/bin || true
-      # '';
 
       serviceConfig = {
         ProtectKernelTunables = true;
@@ -187,18 +167,7 @@ in
         # ProtectHostname = "yes";
 
         # NoNewPrivileges = "yes";
-        ReadWritePaths = "/tmp /dev/shm";
-        TemporaryFileSystem = "/run:ro";
-
-        Environment = [
-          "XDG_RUNTIME_DIR=${lib.escapeShellArg cfg.stateDir}"
-          "MESA_LOADER_DRIVER_OVERRIDE=llvmpipe"
-          "GALLIUM_DRIVER=llvmpipe"
-          "LIBGL_ALWAYS_SOFTWARE=1"
-          "DRI_PRIME=0"
-          "WINEDEBUG=-all"
-          "HOME=/var/lib/northstar"
-        ];
+        ReadWritePaths = "/tmp";
 
         Type = "simple";
         User = cfg.user;

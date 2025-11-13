@@ -1,5 +1,5 @@
 diff --git a/nswine/nswine.go b/nswine/nswine.go
-index 87a462e3660..00951b6054e 100644
+index 87a462e3660..c94bd807209 100644
 --- a/nswine.go
 +++ b/nswine.go
 @@ -39,11 +39,9 @@ import (
@@ -14,7 +14,7 @@ index 87a462e3660..00951b6054e 100644
  	"strconv"
  	"strings"
  	"time"
-@@ -112,45 +110,6 @@ func run() error {
+@@ -112,95 +110,6 @@ func run() error {
  		return err
  	}
  
@@ -57,68 +57,63 @@ index 87a462e3660..00951b6054e 100644
 -		return err
 -	}
 -
- 	slog.Info("removing static libs")
- 	if err := filepath.WalkDir(filepath.Join(*Prefix, "lib/wine"), func(path string, d fs.DirEntry, err error) error {
- 		if err != nil {
-@@ -235,261 +194,6 @@ func run() error {
- 		return err
- 	}
- 
--	if *Optimize {
--		slog.Info("removing unnecessary drivers")
--		if err := filepath.WalkDir(filepath.Join(*Prefix, "lib/wine"), func(path string, d fs.DirEntry, err error) error {
--			if err != nil {
--				return err
--			}
--			if d.IsDir() {
--				return nil
--			}
--			switch filepath.Ext(path) {
--			case ".sys":
--			case ".drv":
--			default:
--				return nil
--			}
--			switch filepath.Base(path) {
--			default:
--				return fmt.Errorf("TODO: is the driver %s needed?", path)
--			case "msacm32.drv":
--				return nil // keep
--			case "mountmgr.sys":
--				return nil // keep mountmgr since it's used internally for a lot of stuff (e.g., virtual drive info, creating links)
--			case "ksecdd.sys":
--			case "winspool.drv":
--			case "winebus.sys":
--			case "tdi.sys":
--			case "usbd.sys":
--			case "nsiproxy.sys":
--			case "cng.sys":
--			case "ndis.sys":
--			case "http.sys":
--			case "mouhid.sys":
--			case "winehid.sys":
--			case "hidparse.sys":
--			case "winepulse.drv":
--			case "wineusb.sys":
--			case "wineps.drv":
--			case "scsiport.sys":
--			case "fltmgr.sys":
--			case "winealsa.drv":
--			case "winexinput.sys":
--			case "winex11.drv":
--			case "hidclass.sys":
--			case "winebth.sys":
--			case "wmilib.sys":
--			case "netio.sys":
--			case "winewayland.drv":
--			}
--			slog.Debug("removing driver", "name", filepath.Base(path))
--			return os.Remove(path)
--		}); err != nil {
+-	slog.Info("removing static libs")
+-	if err := filepath.WalkDir(filepath.Join(*Prefix, "lib/wine"), func(path string, d fs.DirEntry, err error) error {
+-		if err != nil {
 -			return err
 -		}
+-		if d.IsDir() {
+-			return nil
+-		}
+-		if filepath.Ext(path) != ".a" {
+-			return nil
+-		}
+-		return os.Remove(path)
+-	}); err != nil {
+-		return err
 -	}
 -
+-	slog.Info("removing directshow filters")
+-	if err := filepath.WalkDir(filepath.Join(*Prefix, "lib/wine"), func(path string, d fs.DirEntry, err error) error {
+-		if err != nil {
+-			return err
+-		}
+-		if d.IsDir() {
+-			return nil
+-		}
+-		if filepath.Ext(path) != ".ax" {
+-			return nil
+-		}
+-		slog.Debug("delete", "path", path)
+-		return os.Remove(path)
+-	}); err != nil {
+-		return err
+-	}
+-
+-	slog.Info("removing control panel items")
+-	if err := filepath.WalkDir(filepath.Join(*Prefix, "lib/wine"), func(path string, d fs.DirEntry, err error) error {
+-		if err != nil {
+-			return err
+-		}
+-		if d.IsDir() {
+-			return nil
+-		}
+-		if filepath.Ext(path) != ".cpl" {
+-			return nil
+-		}
+-		slog.Debug("delete", "path", path)
+-		return os.Remove(path)
+-	}); err != nil {
+-		return err
+-	}
+-
+ 	slog.Info("removing wine-mono and wine-gecko stubs")
+ 	if err := filepath.WalkDir(filepath.Join(*Prefix, "lib/wine"), func(path string, d fs.DirEntry, err error) error {
+ 		if err != nil {
+@@ -290,207 +199,6 @@ func run() error {
+ 		}
+ 	}
+ 
 -	if *Optimize {
 -		slog.Info("removing wow64 libs")
 -		if err := os.RemoveAll(filepath.Join(*Prefix, "lib/wine/i386-windows")); err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -319,10 +314,11 @@ index 87a462e3660..00951b6054e 100644
 -			return err
 -		}
 -	}
- 
+-
  	slog.Info("patching wine.inf")
  	// 	- mostly so wineboot doesn't complain as much or error out
-@@ -548,65 +252,6 @@ func run() error {
+ 	// 	- a little bit of extra tidying
+@@ -548,65 +256,6 @@ func run() error {
  		return err
  	}
  
@@ -386,6 +382,6 @@ index 87a462e3660..00951b6054e 100644
 -		slog.Info(string(bytes.TrimSpace(tmp)))
 -	}
 -
-+	return nil;
++	return nil
  	return errors.ErrUnsupported
  }
