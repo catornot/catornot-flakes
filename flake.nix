@@ -29,6 +29,7 @@
                   nswine-env = config.packages.nswine-env;
                   nswrap = config.packages.nswrap;
                   nswine-run = config.packages.nswine-run;
+                  nswine = config.packages.nswine;
                   northstar-dedicated = config.packages.northstar-dedicated;
                 }
               );

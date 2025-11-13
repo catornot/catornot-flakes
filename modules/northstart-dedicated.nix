@@ -13,6 +13,7 @@ in
     enable = lib.mkEnableOption "Northstar Dedicated Server";
 
     package-nswine-env = lib.mkPackageOption self.packages.${pkgs.system} "nswine-env" { };
+    package-nswine = lib.mkPackageOption self.packages.${pkgs.system} "nswine" { };
     package-nswrap = lib.mkPackageOption self.packages.${pkgs.system} "nswrap" { };
     package-nswine-run = lib.mkPackageOption self.packages.${pkgs.system} "nswine-run" { };
     package-northstar-dedicated =
@@ -117,15 +118,22 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
 
-      # TODO: should probably delete these files on restart?
+      path = [
+        cfg.package-nswine
+        pkgs.coreutils-full
+      ];
       preStart = ''
-        # cleanup from previous runs
-        # probably not the best tbh
-        rm -r ${cfg.stateDir}/wine/bin 2>/dev/null || true
-        rm -r ${cfg.stateDir}/bin 2>/dev/null || true
-        rm ${cfg.stateDir}/bin/nswrap 2>/dev/null || true
-        rm ${cfg.stateDir}/wine 2>/dev/null || true
-        rm ${cfg.stateDir}/titanfall2 2>/dev/null || true
+        # # cleanup from previous runs
+        # # probably not the best tbh
+        # rm -r ${cfg.stateDir}/wine/bin 2>/dev/null || true
+        # rm -r ${cfg.stateDir}/bin 2>/dev/null || true
+        # rm ${cfg.stateDir}/bin/nswrap 2>/dev/null || true
+        # rm ${cfg.stateDir}/wine 2>/dev/null || true
+        # rm ${cfg.stateDir}/titanfall2 2>/dev/null || true
+
+        rm -rf ${cfg.stateDir}/*
+        mkdir -p ${cfg.stateDir}
+        chown ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
 
         mkdir -p ${cfg.stateDir}/wine
         mkdir -p ${cfg.stateDir}/bin
@@ -171,6 +179,12 @@ in
         # NoNewPrivileges = "yes";
         ReadWritePaths = "/tmp";
 
+        Environment = [
+          "NSWRAP_DEBUG=1"
+          "NSWRAP_EXTWINE=1"
+          "WINEPREFIX=${cfg.stateDir}/wine"
+        ];
+
         Type = "simple";
         User = cfg.user;
         ExecStart = lib.escapeShellArgs (
@@ -179,6 +193,7 @@ in
             "-C"
             "${cfg.stateDir}/titanfall2"
             "${cfg.stateDir}/bin/nswrap"
+            "-dedicated"
             ''+ns_server_name="${cfg.settings.name}"''
             ''+ns_server_desc="${cfg.settings.description}"''
             ''+ns_server_password="${
@@ -199,8 +214,13 @@ in
           ]
         );
 
+        # ExecStopPost = ''
+        #   rm -rf ${cfg.stateDir}
+        # '';
+
         # Restart = "always";
         # RestartSec = "10s";
+        WorkingDirectory = cfg.stateDir;
       };
     };
 
