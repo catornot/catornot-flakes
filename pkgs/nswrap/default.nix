@@ -41,5 +41,6 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    mainProgram = "nswrap";
   };
 }

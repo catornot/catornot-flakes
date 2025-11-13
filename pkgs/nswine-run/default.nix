@@ -2,10 +2,8 @@
   nswrap,
   writers,
   nswine-env-path,
-  xvfb-run,
-  bash,
-  lib,
   isLocal ? false,
+  lib,
 }:
 writers.writeRustBin "nswine-run" { } # rust
   ''
@@ -17,13 +15,13 @@ writers.writeRustBin "nswine-run" { } # rust
 
       let envs = [
         ("WINEARCH", r#"win64"#),
-        ("WINEDLLOVERRIDES", r#""mscoree,mshtml,winemenubuilder.exe=\""#),
+        ("WINEDLLOVERRIDES", r#"mscoree,mshtml,winemenubuilder.exe=,d3d11=n"#),
         ("WINEDEBUG", r#"+msgbox,fixme-secur32,fixme-bcrypt,fixme-ver,err-wldap32,err-kerberos,err-ntlm"#),
         ${if isLocal then "" else ''("WINEPREFIX", "${nswine-env-path}"),''}
         ("NSWRAP_RUNTIME", "${nswine-env-path}"),
         ("NSWRAP_DEBUG", "1"),
-        ("NSWRAP_EXTWINE", "1"),
-        // ("PATH", "${nswine-env-path}"),
+        ("NSWRAP_EXTWINE", "0"),
+        ("PATH", "${nswine-env-path}"),
         ("XDG_RUNTIME_DIR", "${nswine-env-path}")
       ];
 
@@ -37,17 +35,9 @@ writers.writeRustBin "nswine-run" { } # rust
 
       let args = args.inspect(|arg| println!("with arg: {arg}")).collect::<Vec<_>>();
       
-      // std::process::Command::new("${lib.getExe bash}")
-      // std::process::Command::new(nswrap)
-      std::process::Command::new("${nswine-env-path}/bin/wine".to_string())
-      // std::process::Command::new("${xvfb-run}/bin/xvfb-run".to_string())
-        // .arg("${nswine-env-path}/bin/wine")
-        // .arg("${nswine-env-path}/bin/wine")
-        // .arg("wine")
+      std::process::Command::new("${lib.getExe nswrap}")
         .envs(envs)
         .current_dir(path_arg)
-        // .arg("wine")
-        .arg("NorthstarLauncher.exe")
         .arg("-dedicated")
         .args(args)
         .spawn().map_err(|err| format!("can't spawn: {err:?}"))?

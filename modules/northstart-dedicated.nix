@@ -145,6 +145,8 @@ in
           (lib.getExe (cfg.package-nswine-run.override { nswine-env-path = "${cfg.stateDir}/wine"; }))
         } ${cfg.stateDir}/wine/nsrun
         cp -r ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2 || true
+
+        chmod -R a+rw ${cfg.stateDir}
       '';
 
       serviceConfig = {
@@ -173,8 +175,10 @@ in
         User = cfg.user;
         ExecStart = lib.escapeShellArgs (
           [
-            "${cfg.stateDir}/wine/nsrun"
+            "${lib.getExe' pkgs.coreutils-full "env"}"
+            "-C"
             "${cfg.stateDir}/titanfall2"
+            "${cfg.stateDir}/bin/nswrap"
             ''+ns_server_name="${cfg.settings.name}"''
             ''+ns_server_desc="${cfg.settings.description}"''
             ''+ns_server_password="${
