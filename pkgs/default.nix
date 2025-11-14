@@ -50,6 +50,7 @@
           };
           nswine-env = pkgs.callPackage ./nswine-env { inherit nswine; };
           nswine = pkgs.callPackage ./nswine { };
+          check-hash = pkgs.callPackage ./check-hash { };
           northstar-dedicated = pkgs.callPackage ./northstar-dedicated {
             titanfall2 = titanfall2;
             r2overlay = r2overlay;

@@ -51,6 +51,7 @@ in
   options.services.northstar-dedicated = {
     enable = lib.mkEnableOption "Northstar Dedicated Server";
 
+    package-check-hash = lib.mkPackageOption self.packages.${pkgs.system} "check-hash" { };
     package-nswine-env = lib.mkPackageOption self.packages.${pkgs.system} "nswine-env" { };
     package-nswine = lib.mkPackageOption self.packages.${pkgs.system} "nswine" { };
     package-nswrap = lib.mkPackageOption self.packages.${pkgs.system} "nswrap" { };
@@ -180,30 +181,26 @@ in
         mkdir -p ${cfg.stateDir}
         chown ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
 
-        mkdir -p ${cfg.stateDir}/wine
-        mkdir -p ${cfg.stateDir}/bin
-        mkdir -p ${cfg.stateDir}/titanfall2
-
-        mkdir -p ${cfg.stateDir}/titanfall2/R2Northstar
-        mkdir -p ${cfg.stateDir}/titanfall2/R2Northstar/logs
-        mkdir -p ${cfg.stateDir}/wine/bin
-
         mkdir -p ${cfg.stateDir}/.cache
         mkdir -p ${cfg.stateDir}/.cache/fontconfig
         mkdir -p ${cfg.stateDir}/wine/prefix
 
-        cp -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine || true
-        cp ${cfg.package-nswrap}/bin/nswrap ${cfg.stateDir}/bin/nswrap
-        cp ${
-          (lib.getExe (cfg.package-nswine-run.override { nswine-env-path = "${cfg.stateDir}/wine"; }))
-        } ${cfg.stateDir}/wine/nsrun
-        cp -r ${
-          cfg.package-northstar-dedicated.override {
-            northstar-packages =
-              (builtins.map lib.nameToPackage cfg.profile.package-names) ++ cfg.profile.packages;
+        # this also copies over the titanfall2 install
+        ${lib.getExe (
+          cfg.package-check-hash.override {
+            original = cfg.package-northstar-dedicated.override {
+              northstar-packages =
+                (builtins.map lib.nameToPackage cfg.profile.package-names) ++ cfg.profile.packages;
+              northstar-custom = lib.optional cfg.profile.bp-ort.enabled;
+            };
+            installed = "${cfg.stateDir}/titanfall2"; # TODO: this will break if we support multiple profiles
+            hashFileName = "r2NorthstarHash";
           }
-        }/* ${cfg.stateDir}/titanfall2 || true
+        )}
 
+        cp -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine || true
+
+        chown -R ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
         chmod -R a+rw ${cfg.stateDir}
       '';
 
@@ -214,20 +211,19 @@ in
         # NoNewPrivileges="yes";
         # ProtectSystem="strict";
         # ProtectHome="read-only";
-        # PrivateDevices="yes";
         # RestrictSUIDSGID="yes";
         # RestrictRealtime="yes";
         # RestrictNamespaces="yes";
         # LockPersonality="yes";
         # MemoryDenyWriteExecute="yes";
         # PrivateUsers="yes";
-        PrivateTmp = "no";
+        PrivateTmp = "yes";
 
-        # PrivateDevices = "yes";
-        # ProtectHostname = "yes";
+        PrivateDevices = "yes";
+        ProtectHostname = "yes";
 
         # NoNewPrivileges = "yes";
-        ReadWritePaths = "/tmp";
+        # ReadWritePaths = "/tmp";
 
         Environment = [
           "NSWRAP_DEBUG=0"
@@ -242,7 +238,7 @@ in
             "${lib.getExe' pkgs.coreutils-full "env"}"
             "-C"
             "${cfg.stateDir}/titanfall2"
-            "${cfg.stateDir}/bin/nswrap"
+            "${lib.getExe cfg.package-nswrap}"
             "-dedicated"
             ''+ns_server_name="${cfg.settings.name}"''
             ''+ns_server_desc="${cfg.settings.description}"''
@@ -266,8 +262,8 @@ in
 
         ExecStopPost = "${lib.getExe' pkgs.coreutils "rm"} -rf ${cfg.stateDir}/wine";
 
-        # Restart = "always";
-        # RestartSec = "10s";
+        Restart = "always";
+        RestartSec = "10s";
         WorkingDirectory = cfg.stateDir;
       };
     };
