@@ -4,9 +4,48 @@
   lib,
   pkgs,
   ...
-}:
+}@args:
 let
   cfg = config.services.northstar-dedicated;
+  lib = args.lib // (self.libExport pkgs);
+in
+let
+  bpOrtModule = lib.types.submodule {
+    options = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        description = ''
+          enables bp-ort and adds it to your packages
+        '';
+        # package = lib.mkPackageOption inputs.bp-ort.packages.${pkgs.system} "nswrap" { };
+      };
+    };
+  };
+  profileModule = lib.types.submodule {
+    options = {
+      package-names = lib.mkOption {
+        type = lib.types.listOf lib.types.attrs;
+        description = ''
+          the names of packages on thunderstore in this format <team>-<package>-<version> and a hash
+        '';
+        default = [ ];
+      };
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.path;
+        description = ''
+          some packages
+        '';
+        default = [ ];
+      };
+      bp-ort = lib.mkOption {
+        type = bpOrtModule;
+        description = ''
+          the a special place for configuring and setting up bp-ort
+        '';
+        default = { };
+      };
+    };
+  };
 in
 {
   options.services.northstar-dedicated = {
@@ -86,6 +125,21 @@ in
       default = [ ];
     };
 
+    profile = lib.mkOption {
+      type = profileModule;
+      description = "Northstar Profile";
+      default = { };
+      example = lib.literalExpression ''
+        {
+          package-names = [
+            { name = "cat_or_not-AmpedMobilepoints-0.0.4"; sha256 = lib.fakeHash; }
+            { name = "IMC-Spyglass-2.2.1"; sha256 = lib.fakeHash; }
+          ];
+          bp-ort.enable = true;
+        }
+      '';
+    };
+
     playlistVars = lib.mkOption {
       description = "playlist variables";
       example = ''
@@ -120,18 +174,9 @@ in
 
       path = [
         cfg.package-nswine
-        pkgs.coreutils-full
       ];
-      preStart = ''
-        # # cleanup from previous runs
-        # # probably not the best tbh
-        # rm -r ${cfg.stateDir}/wine/bin 2>/dev/null || true
-        # rm -r ${cfg.stateDir}/bin 2>/dev/null || true
-        # rm ${cfg.stateDir}/bin/nswrap 2>/dev/null || true
-        # rm ${cfg.stateDir}/wine 2>/dev/null || true
-        # rm ${cfg.stateDir}/titanfall2 2>/dev/null || true
 
-        rm -rf ${cfg.stateDir}/*
+      preStart = ''
         mkdir -p ${cfg.stateDir}
         chown ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
 
@@ -152,7 +197,12 @@ in
         cp ${
           (lib.getExe (cfg.package-nswine-run.override { nswine-env-path = "${cfg.stateDir}/wine"; }))
         } ${cfg.stateDir}/wine/nsrun
-        cp -r ${cfg.package-northstar-dedicated}/* ${cfg.stateDir}/titanfall2 || true
+        cp -r ${
+          cfg.package-northstar-dedicated.override {
+            northstar-packages =
+              (builtins.map lib.nameToPackage cfg.profile.package-names) ++ cfg.profile.packages;
+          }
+        }/* ${cfg.stateDir}/titanfall2 || true
 
         chmod -R a+rw ${cfg.stateDir}
       '';
@@ -180,7 +230,7 @@ in
         ReadWritePaths = "/tmp";
 
         Environment = [
-          "NSWRAP_DEBUG=1"
+          "NSWRAP_DEBUG=0"
           "NSWRAP_EXTWINE=1"
           "WINEPREFIX=${cfg.stateDir}/wine/wine"
         ];
@@ -214,9 +264,7 @@ in
           ]
         );
 
-        # ExecStopPost = ''
-        #   rm -rf ${cfg.stateDir}
-        # '';
+        ExecStopPost = "${lib.getExe' pkgs.coreutils "rm"} -rf ${cfg.stateDir}/wine";
 
         # Restart = "always";
         # RestartSec = "10s";

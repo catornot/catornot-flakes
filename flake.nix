@@ -46,5 +46,12 @@
         {
           formatter = pkgs.nixfmt-tree;
         };
+    }
+    // {
+      libExport = pkgs: {
+        fetchFromThunderstore = pkgs.callPackage ./lib/fetchthunderstore.nix { };
+        makeR2Northstar = pkgs.callPackage ./lib/maker2northstar.nix { };
+        nameToPackage = pkgs.callPackage ./lib/nametopackage.nix { };
+      };
     };
 }

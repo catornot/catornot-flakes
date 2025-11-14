@@ -96,7 +96,7 @@ stdenvNoCC.mkDerivation {
       mkdir -p $TMP/wine
       mkdir -p $TMP/lib/wine/x86_64-windows
 
-      NSWINE_UNSAFE=1 nswine --prefix $out --output $TMP/wine -debug
+      NSWINE_UNSAFE=1 nswine --prefix $out --output $TMP/wine -debug -optimize
 
       ${lib.getExe patchthething} $out/lib/wine/x86_64-windows/explorer.exe
 

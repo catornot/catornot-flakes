@@ -15,7 +15,7 @@ writers.writeRustBin "nswine-run" { } # rust
 
       let envs = [
         ("WINEARCH", r#"win64"#),
-        ("WINEDLLOVERRIDES", r#"mscoree,mshtml,winemenubuilder.exe=,d3d11=n"#),
+        ("WINEDLLOVERRIDES", r#"mscoree,mshtml,winemenubuilder.exe="#),
         ("WINEDEBUG", r#"+msgbox,fixme-secur32,fixme-bcrypt,fixme-ver,err-wldap32,err-kerberos,err-ntlm"#),
         ${if isLocal then "" else ''("WINEPREFIX", "${nswine-env-path}"),''}
         ("NSWRAP_RUNTIME", "${nswine-env-path}"),

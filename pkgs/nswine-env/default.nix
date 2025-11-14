@@ -37,15 +37,9 @@ stdenvNoCC.mkDerivation {
       ${lib.getExe' nswine wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mscoree' /t REG_SZ /d '' /f
       ${lib.getExe' nswine wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mshtml' /t REG_SZ /d '' /f
       ${lib.getExe' nswine wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'winemenubuilder' /t REG_SZ /d '' /f
-      # ${lib.getExe' nswine wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'd3d11' /t REG_SZ /d 'native' /f
+      ${lib.getExe' nswine wine-name} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'd3d11' /t REG_SZ /d 'native' /f
       ${lib.getExe' nswine wine-name} wineboot --shutdown --force
       ${lib.getExe' nswine wine-name} wineboot --kill --force
-      
-      # rm $out/wine/dosdevices/z: # hoppefully 
-
-
-      cp -r ${wine-ns}/lib $out/lib
-      cp -r ${wine-ns}/bin/* $out/bin/ 
   ";
 }
 
