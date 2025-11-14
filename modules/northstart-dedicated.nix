@@ -182,7 +182,7 @@ in
         Environment = [
           "NSWRAP_DEBUG=1"
           "NSWRAP_EXTWINE=1"
-          "WINEPREFIX=${cfg.stateDir}/wine"
+          "WINEPREFIX=${cfg.stateDir}/wine/wine"
         ];
 
         Type = "simple";
