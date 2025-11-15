@@ -7,6 +7,7 @@
       url = "github:hercules-ci/flake-parts";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
+    bp-ort.url = "github:catornot/bp-ort";
   };
 
   outputs =
@@ -39,7 +40,7 @@
       ];
 
       flake.nixosModules = {
-        northstar-dedicated = import ./modules/northstart-dedicated.nix { self = self; };
+        northstar-dedicated = import ./modules/northstart-dedicated.nix { inherit self inputs; };
       };
 
       perSystem =

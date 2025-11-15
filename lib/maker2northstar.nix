@@ -21,7 +21,7 @@ lib.makeOverridable (
     northstar-packages ? [ ],
     northstar-mods ? [ ],
     northstar-plugins ? [ ],
-    northstar-custom ? [ ],
+    northstar-extras ? [ ],
     name ? "R2Northstar",
   }:
   let
@@ -44,7 +44,7 @@ lib.makeOverridable (
   symlinkJoin {
     name = name;
     paths =
-      northstar-custom
+      northstar-extras
       ++ (lib.optional (!isEmpty northstar-packages) packages-linked)
       ++ (lib.optional (!isEmpty northstar-mods) mods-linked)
       ++ (lib.optional (!isEmpty northstar-plugins) plugins-linked);

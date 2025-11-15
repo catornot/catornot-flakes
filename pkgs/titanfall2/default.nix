@@ -19,6 +19,8 @@ stdenvNoCC.mkDerivation (final: {
     ${unzip}/bin/unzip -P ${final.pname} $src -d $out
     mv $out/titanfall2/* $out
     rmdir $out/titanfall2
+
+    rm -r $out/r2
   '';
 
   meta = {

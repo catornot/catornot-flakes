@@ -45,7 +45,7 @@ writers.writeRustBin "check-hash" { } # rust
         for entry in fs::read_dir(src)? {
             let entry = entry?;
             let ty = entry.file_type()?;
-            if ty.is_dir() {
+            if ty.is_dir() && !ty.is_symlink() {
                 copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
             } else {
                 fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;

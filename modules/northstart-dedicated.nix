@@ -1,4 +1,4 @@
-{ self }:
+{ self, inputs }:
 {
   config,
   lib,
@@ -177,32 +177,63 @@ in
         cfg.package-nswine
       ];
 
-      preStart = ''
-        mkdir -p ${cfg.stateDir}
-        chown ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
+      preStart =
+        let
+          wrapInFolder = name: ''
+            if [ -z "$(ls -A $out)" ]; then
+              echo "Empty"
+            else
+              mv $out/* $TMP
+              mkdir -p $out/${name}
+              mv $TMP/* $out/${name}
+            fi
+          '';
+          bp-ort-mod = inputs.bp-ort.packages.${pkgs.system}.mod;
+          navmeshes = inputs.bp-ort.packages.${pkgs.system}.navmeshes;
+        in
+        ''
+          mkdir -p ${cfg.stateDir}
+          chown ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
 
-        mkdir -p ${cfg.stateDir}/.cache
-        mkdir -p ${cfg.stateDir}/.cache/fontconfig
-        mkdir -p ${cfg.stateDir}/wine/prefix
+          mkdir -p ${cfg.stateDir}/.cache
+          mkdir -p ${cfg.stateDir}/.cache/fontconfig
+          mkdir -p ${cfg.stateDir}/wine/prefix
 
-        # this also copies over the titanfall2 install
-        ${lib.getExe (
-          cfg.package-check-hash.override {
-            original = cfg.package-northstar-dedicated.override {
-              northstar-packages =
-                (builtins.map lib.nameToPackage cfg.profile.package-names) ++ cfg.profile.packages;
-              northstar-custom = lib.optional cfg.profile.bp-ort.enabled;
-            };
-            installed = "${cfg.stateDir}/titanfall2"; # TODO: this will break if we support multiple profiles
-            hashFileName = "r2NorthstarHash";
-          }
-        )}
+          # this also copies over the titanfall2 install
+          ${lib.getExe (
+            cfg.package-check-hash.override {
+              original = cfg.package-northstar-dedicated.override {
+                northstar-packages =
+                  (builtins.map lib.nameToPackage cfg.profile.package-names)
+                  ++ cfg.profile.packages
+                  ++ (lib.optional cfg.profile.bp-ort.enable (
+                    pkgs.symlinkJoin {
+                      name = "bp-ort-mod";
+                      paths = [ bp-ort-mod ];
+                      postBuild = wrapInFolder bp-ort-mod.name;
+                    }
+                  ));
+                # bruh why doesn't this work?
+                # northstar-extras = (
+                #   lib.optional cfg.profile.bp-ort.enable (
+                #     pkgs.symlinkJoin {
+                #       name = "octnavs";
+                #       paths = [ navmeshes ];
+                #       postBuild = wrapInFolder "octnavs";
+                #     }
+                #   )
+                # );
+              };
+              installed = "${cfg.stateDir}/titanfall2"; # TODO: this will break if we support multiple profiles
+              hashFileName = "r2NorthstarHash";
+            }
+          )}
 
-        cp -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine || true
+          cp -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine || true
 
-        chown -R ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
-        chmod -R a+rw ${cfg.stateDir}
-      '';
+          chown -R ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
+          chmod -R a+rw ${cfg.stateDir}
+        '';
 
       serviceConfig = {
         ProtectKernelTunables = true;
