@@ -8,11 +8,11 @@ let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "Northstar";
-  version = "1.31.3";
+  version = "1.31.4";
 
   src = fetchurl {
     url = "https://github.com/R2Northstar/Northstar/releases/download/v${version}/${pname}.release.v${version}.zip";
-    sha256 = "sha256-kz76mmyZGYisFwxL7KllRlXMfSk+wRlZH0CfRgZRuPg=";
+    sha256 = "sha256-3LnqvOcAC5snM9EApYIXx4vZxTesL+Eas9G8im4Mi+k=";
   };
 
   dontUnpack = true;
