@@ -73,6 +73,7 @@
           sere = pkgs.callPackage ./sere { inherit pkgs-win; };
           tf2vpk = pkgs.callPackage ./tf2vpk { };
           flightcore = pkgs.callPackage ./flightcore { };
+          rustcon = pkgs.callPackage ./rustcon { };
         };
     };
 }

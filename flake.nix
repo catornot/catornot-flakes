@@ -8,6 +8,7 @@
       # inputs.nixpkgs.follows = "nixpkgs";
     };
     bp-ort.url = "github:catornot/bp-ort";
+    r2rcon-rs.url = "github:catornot/r2rcon-rs";
   };
 
   outputs =
@@ -33,6 +34,7 @@
                   nswine = config.packages.nswine;
                   northstar-dedicated = config.packages.northstar-dedicated;
                   check-hash = config.packages.check-hash;
+                  rustcon = config.packages.rustcon;
                 }
               );
           }

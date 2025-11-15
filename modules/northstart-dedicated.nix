@@ -51,7 +51,32 @@ let
         description = ''
           enables bp-ort and adds it to your packages
         '';
-        # package = lib.mkPackageOption inputs.bp-ort.packages.${pkgs.system} "nswrap" { };
+        default = false;
+      };
+    };
+  };
+  rconModule = lib.types.submodule {
+    options = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        description = ''
+          enables r2rcon-rs and adds it to your packages
+        '';
+        default = false;
+      };
+      sshKeys = lib.mkOption {
+        type = lib.types.listOf lib.types.singleLineStr;
+        description = ''
+          adds public ssh keys to the ${cfg.user} user
+        '';
+        default = [ ];
+      };
+      password = lib.mkOption {
+        type = lib.types.str;
+        description = ''
+          password for the rcon connection by default it's psk
+        '';
+        default = "psk";
       };
     };
   };
@@ -78,6 +103,15 @@ let
             the a special place for configuring and setting up bp-ort
           '';
           default = { };
+        };
+        rcon = lib.mkOption {
+          type = rconModule;
+          description = ''
+            the a special place for configuring and setting up rcon
+          '';
+          default = {
+            enable = false;
+          };
         };
 
         # settings
@@ -129,6 +163,7 @@ in
   options.services.northstar-dedicated = {
     enable = lib.mkEnableOption "Northstar Dedicated Server";
 
+    package-rustcon = lib.mkPackageOption self.packages.${pkgs.system} "rustcon" { };
     package-check-hash = lib.mkPackageOption self.packages.${pkgs.system} "check-hash" { };
     package-nswine-env = lib.mkPackageOption self.packages.${pkgs.system} "nswine-env" { };
     package-nswine = lib.mkPackageOption self.packages.${pkgs.system} "nswine" { };
@@ -194,6 +229,17 @@ in
         group = cfg.user;
         home = cfg.stateDir;
         isSystemUser = lib.mkDefault true;
+        shell =
+          (pkgs.writeShellApplication {
+            name = "rustcon-psk";
+            text = "RUSTCON_PASS=${cfg.profile.rcon.password} ${lib.getExe cfg.package-rustcon}";
+          })
+          // {
+            shellPath = "bin/rustcon-psk";
+          };
+        useDefaultShell = false;
+        openssh.authorizedKeys.keys = if cfg.profile.rcon.enable then cfg.profile.rcon.sshKeys else [ ];
+        ignoreShellProgramCheck = true;
       };
     };
 
@@ -236,17 +282,27 @@ in
               postBuild = unwrapDir "mods";
             }
           );
-          northstar-plugins = lib.optional cfg.profile.bp-ort.enable (
-            pkgs.symlinkJoin {
-              name = "catornot-bp_ort-${bp-ort-mod.version}";
-              paths = [
-                inputs.bp-ort.packages.${pkgs.system}.bp-ort
-                inputs.bp-ort.packages.${pkgs.system}.octbots
-                inputs.bp-ort.packages.${pkgs.system}.ranim
-              ];
-              postBuild = unwrapDir "bin";
-            }
-          );
+          northstar-plugins =
+            (lib.optional cfg.profile.bp-ort.enable (
+              pkgs.symlinkJoin {
+                name = "catornot-bp_ort-${bp-ort-mod.version}";
+                paths = [
+                  inputs.bp-ort.packages.${pkgs.system}.bp-ort
+                  inputs.bp-ort.packages.${pkgs.system}.octbots
+                  inputs.bp-ort.packages.${pkgs.system}.ranim
+                ];
+                postBuild = unwrapDir "bin";
+              }
+            ))
+            ++ (lib.optional cfg.profile.rcon.enable (
+              pkgs.symlinkJoin {
+                name = "catornot-r2rcon-rs";
+                paths = [
+                  inputs.r2rcon-rs.packages.${pkgs.system}.default
+                ];
+                postBuild = unwrapDir "bin";
+              }
+            ));
           northstar-extras = (
             lib.optional cfg.profile.bp-ort.enable (
               pkgs.symlinkJoin {
@@ -338,7 +394,7 @@ in
 
         Type = "simple";
         User = cfg.user;
-        ExecStart = lib.escapeShellArgs (
+        ExecStart = builtins.concatStringsSep " " (
           [
             "${lib.getExe' pkgs.coreutils-full "env"}"
             "-C"
@@ -361,6 +417,15 @@ in
               ''"''
             ])
           ]
+          ++ (
+            if cfg.profile.rcon.enable then
+              [
+                "-rcon_ip_port 127.0.0.1:27015"
+                "-rcon_password ${cfg.profile.rcon.password}"
+              ]
+            else
+              [ ]
+          )
         );
 
         ExecStopPost = "${lib.getExe' pkgs.coreutils "rm"} -rf ${cfg.stateDir}/wine";
