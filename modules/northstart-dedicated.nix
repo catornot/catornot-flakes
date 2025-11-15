@@ -188,8 +188,52 @@ in
               mv $TMP/* $out/${name}
             fi
           '';
+          unwrapDir = name: ''
+            mv $out/${name}/* $TMP
+            rm -r $out
+            mkdir -p $out
+            mv $TMP/* $out
+          '';
           bp-ort-mod = inputs.bp-ort.packages.${pkgs.system}.mod;
           navmeshes = inputs.bp-ort.packages.${pkgs.system}.navmeshes;
+
+          northstar-packages =
+            (builtins.map lib.nameToPackage cfg.profile.package-names) ++ cfg.profile.packages;
+          northstar-mods = lib.optional cfg.profile.bp-ort.enable (
+            pkgs.symlinkJoin {
+              name = "catornot-bp_ort-${bp-ort-mod.version}";
+              paths = [ bp-ort-mod ];
+              postBuild = unwrapDir "mods";
+            }
+          );
+          northstar-plugins = lib.optional cfg.profile.bp-ort.enable (
+            pkgs.symlinkJoin {
+              name = "catornot-bp_ort-${bp-ort-mod.version}";
+              paths = [
+                inputs.bp-ort.packages.${pkgs.system}.bp-ort
+                inputs.bp-ort.packages.${pkgs.system}.octbots
+                inputs.bp-ort.packages.${pkgs.system}.ranim
+              ];
+              postBuild = unwrapDir "bin";
+            }
+          );
+          northstar-extras = (
+            lib.optional cfg.profile.bp-ort.enable (
+              pkgs.symlinkJoin {
+                name = "octnavs";
+                paths = [ navmeshes ];
+                postBuild = wrapInFolder "octnavs";
+              }
+            )
+          );
+          titanfall2-install = cfg.package-northstar-dedicated.override {
+            inherit
+              northstar-packages
+              northstar-mods
+              northstar-extras
+              northstar-plugins
+              ;
+          };
         in
         ''
           mkdir -p ${cfg.stateDir}
@@ -202,38 +246,32 @@ in
           # this also copies over the titanfall2 install
           ${lib.getExe (
             cfg.package-check-hash.override {
-              original = cfg.package-northstar-dedicated.override {
-                northstar-packages =
-                  (builtins.map lib.nameToPackage cfg.profile.package-names)
-                  ++ cfg.profile.packages
-                  ++ (lib.optional cfg.profile.bp-ort.enable (
-                    pkgs.symlinkJoin {
-                      name = "bp-ort-mod";
-                      paths = [ bp-ort-mod ];
-                      postBuild = wrapInFolder bp-ort-mod.name;
-                    }
-                  ));
-                # bruh why doesn't this work?
-                # northstar-extras = (
-                #   lib.optional cfg.profile.bp-ort.enable (
-                #     pkgs.symlinkJoin {
-                #       name = "octnavs";
-                #       paths = [ navmeshes ];
-                #       postBuild = wrapInFolder "octnavs";
-                #     }
-                #   )
-                # );
-              };
+              original = titanfall2-install;
               installed = "${cfg.stateDir}/titanfall2"; # TODO: this will break if we support multiple profiles
               hashFileName = "r2NorthstarHash";
             }
           )}
 
-          cp -r ${cfg.package-nswine-env}/* ${cfg.stateDir}/wine || true
-
           chown -R ${cfg.user}:${config.users.users.${cfg.user}.group} ${cfg.stateDir}
           chmod -R a+rw ${cfg.stateDir}
-        '';
+
+          export WINEARCH=win64 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\"
+          mkdir -p "$WINEPREFIX"
+
+        ''
+        + "
+          ${lib.getExe' cfg.package-nswine "wine"} wineboot --init
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine' /v 'Version' /t REG_SZ /d 'win10' /f
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Audio' /t REG_SZ /d '' /f
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine\\WineDbg' /v 'ShowCrashDialog' /t REG_DWORD /d 0 /f
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Graphics' /t REG_SZ /d 'null' /f
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mscoree' /t REG_SZ /d '' /f
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mshtml' /t REG_SZ /d '' /f
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'winemenubuilder' /t REG_SZ /d '' /f
+          ${lib.getExe' cfg.package-nswine "wine"} reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'd3d11' /t REG_SZ /d 'native' /f
+          ${lib.getExe' cfg.package-nswine "wine"} wineboot --shutdown --force
+          ${lib.getExe' cfg.package-nswine "wine"} wineboot --kill --force
+       ";
 
       serviceConfig = {
         ProtectKernelTunables = true;
