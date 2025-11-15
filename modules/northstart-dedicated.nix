@@ -6,8 +6,42 @@
   ...
 }@args:
 let
+  toType =
+    type: value:
+    {
+      "int" = lib.toInt;
+      "str" = str: "\"${builtins.toString str}\"";
+      "port" = lib.toInt;
+      "float" = (
+        v:
+        let
+          strVal = builtins.fromJSON v;
+          forceFloat = i: if lib.isFloat i then i else i + 0.5 - 0.5;
+        in
+        assert (builtins.isInt v || lib.isString v);
+        if lib.isString v then
+          forceFloat strVal
+        else if lib.isInt v then
+          forceFloat v
+        else
+          v
+      ); # eh
+    }
+    .${type}
+      value;
+
   cfg = config.services.northstar-dedicated;
   lib = args.lib // (self.libExport pkgs);
+  cfg_settingsJson = builtins.fromJSON (lib.readFile ./cfg_settings.json);
+  cfg_settings_list = lib.mapAttrsToList (name: _: name) cfg_settingsJson;
+  cfg_settings = lib.mapAttrs (
+    name: info:
+    lib.mkOption {
+      type = lib.types.${info.type or "str"};
+      description = info.description or "";
+      default = toType (info.type or "str") info.value or '''""'';
+    }
+  ) cfg_settingsJson;
 in
 let
   bpOrtModule = lib.types.submodule {
@@ -22,29 +56,73 @@ let
     };
   };
   profileModule = lib.types.submodule {
-    options = {
-      package-names = lib.mkOption {
-        type = lib.types.listOf lib.types.attrs;
-        description = ''
-          the names of packages on thunderstore in this format <team>-<package>-<version> and a hash
-        '';
-        default = [ ];
-      };
-      packages = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        description = ''
-          some packages
-        '';
-        default = [ ];
-      };
-      bp-ort = lib.mkOption {
-        type = bpOrtModule;
-        description = ''
-          the a special place for configuring and setting up bp-ort
-        '';
-        default = { };
-      };
-    };
+    options = (
+      {
+        package-names = lib.mkOption {
+          type = lib.types.listOf lib.types.attrs;
+          description = ''
+            the names of packages on thunderstore in this format <team>-<package>-<version> and a hash
+          '';
+          default = [ ];
+        };
+        packages = lib.mkOption {
+          type = lib.types.listOf lib.types.path;
+          description = ''
+            some packages
+          '';
+          default = [ ];
+        };
+        bp-ort = lib.mkOption {
+          type = bpOrtModule;
+          description = ''
+            the a special place for configuring and setting up bp-ort
+          '';
+          default = { };
+        };
+
+        # settings
+        password = lib.mkOption {
+          description = "Specifies the password used by northstar.";
+          type = lib.types.str;
+          default = "";
+        };
+        passwordFile = lib.mkOption {
+          description = "Specifies the password used by northstar using a file.";
+          type = lib.types.pathWith { absolute = true; };
+          example = "/run/secrets/my-server-password";
+          default = "/run/secrets/not-my-server-password"; # eh nix things ig
+        };
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 37015;
+          description = ''
+            Override the Game Port the server uses.
+          '';
+        };
+
+        extraSettings = lib.mkOption {
+          description = "extra settings";
+          example = ''
+            ns_auth_allow_insecure 1
+            ns_private_match_last_mode tdm
+          '';
+          type = lib.types.attrsOf (lib.types.either lib.types.str lib.types.int);
+          default = { };
+        };
+
+        # playlist vars
+        playlistVars = lib.mkOption {
+          description = "playlist variables";
+          example = ''
+            run_epilogue 0
+            featured_mode_amped_tacticals 1
+          '';
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+        };
+      }
+      // cfg_settings
+    );
   };
 in
 {
@@ -72,49 +150,11 @@ in
       description = "User to run the server as.";
     };
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 37015;
-      description = ''
-        Override the Game Port the server uses.
-      '';
-    };
-
     openFirewall = lib.mkEnableOption "" // {
       description = "Whether to open the ports in the firewall.";
     };
 
-    settings = lib.mkOption {
-      description = "Northstar and Titanfall 2 common settings";
-      default = { };
-      type = lib.types.submodule {
-        options = {
-          password = lib.mkOption {
-            description = "Specifies the password used by northstar.";
-            type = lib.types.str;
-            default = "";
-          };
-          passwordFile = lib.mkOption {
-            description = "Specifies the password used by northstar using a file.";
-            type = lib.types.pathWith { absolute = true; };
-            example = "/run/secrets/my-server-password";
-            default = "/run/secrets/not-my-server-password"; # eh nix things ig
-          };
-          name = lib.mkOption {
-            description = "Specifies the name of the server.";
-            type = lib.types.str;
-            default = "Unnamed Flake Northstar Server";
-          };
-          description = lib.mkOption {
-            description = "Specifies the description of the server.";
-            type = lib.types.str;
-            default = "Default server description";
-          };
-        };
-      };
-    };
-
-    extraSettings = lib.mkOption {
+    extraArgs = lib.mkOption {
       description = "extra settings";
       example = ''
         +net_compresspackets_minsize 64
@@ -128,7 +168,7 @@ in
 
     profile = lib.mkOption {
       type = profileModule;
-      description = "Northstar Profile";
+      description = "Northstar Profile; settings, mods, etc";
       default = { };
       example = lib.literalExpression ''
         {
@@ -139,16 +179,6 @@ in
           bp-ort.enable = true;
         }
       '';
-    };
-
-    playlistVars = lib.mkOption {
-      description = "playlist variables";
-      example = ''
-        run_epilogue 0
-        featured_mode_amped_tacticals 1
-      '';
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
     };
   };
 
@@ -233,6 +263,14 @@ in
               northstar-extras
               northstar-plugins
               ;
+            server-settings =
+              (builtins.listToAttrs (
+                builtins.map (value: {
+                  name = value;
+                  value = "${builtins.toString cfg.profile.${value}}";
+                }) cfg_settings_list
+              ))
+              // cfg.profile.extraSettings;
           };
         in
         ''
@@ -277,22 +315,20 @@ in
         ProtectKernelTunables = true;
         ProtectKernelModules = true;
         ProtectControlGroups = true;
-        # NoNewPrivileges="yes";
-        # ProtectSystem="strict";
-        # ProtectHome="read-only";
-        # RestrictSUIDSGID="yes";
-        # RestrictRealtime="yes";
-        # RestrictNamespaces="yes";
-        # LockPersonality="yes";
-        # MemoryDenyWriteExecute="yes";
-        # PrivateUsers="yes";
+        RestrictSUIDSGID = "yes";
+        LockPersonality = "yes";
+        PrivateUsers = "yes";
         PrivateTmp = "yes";
 
         PrivateDevices = "yes";
         ProtectHostname = "yes";
 
-        # NoNewPrivileges = "yes";
-        # ReadWritePaths = "/tmp";
+        NoNewPrivileges = "yes";
+
+        ProtectSystem = "full";
+        ReadWritePaths = "${cfg.stateDir}";
+        NoExecPaths = "/";
+        ExecPaths = "/nix ${cfg.stateDir}";
 
         Environment = [
           "NSWRAP_DEBUG=0"
@@ -309,21 +345,19 @@ in
             "${cfg.stateDir}/titanfall2"
             "${lib.getExe cfg.package-nswrap}"
             "-dedicated"
-            ''+ns_server_name="${cfg.settings.name}"''
-            ''+ns_server_desc="${cfg.settings.description}"''
             ''+ns_server_password="${
-              if cfg.settings.passwordFile == "/run/secrets/not-my-server-password" then
-                cfg.settings.password
+              if cfg.profile.passwordFile == "/run/secrets/not-my-server-password" then
+                cfg.profile.password
               else
-                "$(cat ${cfg.settings.passwordFile})"
+                "$(cat ${cfg.settings.profile.passwordFile})"
             }"''
-            "-port ${builtins.toString cfg.port}"
+            "-port ${builtins.toString cfg.profile.port}"
           ]
-          ++ cfg.extraSettings
+          ++ cfg.extraArgs
           ++ [
             (builtins.concatStringsSep "" [
               "+setplaylistvaroverrides \""
-              (builtins.concatStringsSep " " cfg.playlistVars)
+              (builtins.concatStringsSep " " cfg.profile.playlistVars)
               ''"''
             ])
           ]
@@ -338,7 +372,7 @@ in
     };
 
     networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedUDPPorts = [ cfg.port ];
+      allowedUDPPorts = [ cfg.profile.port ];
     };
   };
 }

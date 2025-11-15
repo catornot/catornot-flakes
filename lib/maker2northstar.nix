@@ -23,7 +23,6 @@ lib.makeOverridable (
     northstar-plugins ? [ ],
     northstar-extras ? [ ],
     name ? "R2Northstar",
-    ... # for fun
   }:
   let
     packages-linked = symlinkJoin {
