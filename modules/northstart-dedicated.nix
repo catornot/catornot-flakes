@@ -430,6 +430,7 @@ in
 
         ExecStopPost = "${lib.getExe' pkgs.coreutils "rm"} -rf ${cfg.stateDir}/wine";
 
+        KillMode = "mixed";
         Restart = "always";
         RestartSec = "10s";
         WorkingDirectory = cfg.stateDir;
