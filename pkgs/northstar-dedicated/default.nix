@@ -40,7 +40,7 @@ symlinkJoin {
       r2overlay
       northstar
       r2northstar
-      (writeTextDir "r2NorthstarHash" "${r2northstar}")
+      (writeTextDir "r2NorthstarHash" "${r2northstar}+${autoexec_ns_server server-settings}+${northstar}+${r2overlay}+${titanfall2}")
     ];
 
   postBuild = ''
