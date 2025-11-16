@@ -401,7 +401,7 @@ in
             "${cfg.stateDir}/titanfall2"
             "${lib.getExe cfg.package-nswrap}"
             "-dedicated"
-            ''+ns_server_password="${
+            ''+ns_server_password "${
               if cfg.profile.passwordFile == "/run/secrets/not-my-server-password" then
                 cfg.profile.password
               else
