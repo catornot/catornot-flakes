@@ -42,6 +42,7 @@ writers.writeRustBin "check-hash" { } # rust
 
     fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
         use std::fs;
+        use std::os::unix::fs as unix_fs;
         fs::create_dir_all(&dst)?;
         for entry in fs::read_dir(src)? {
             let entry = entry?;
@@ -49,7 +50,7 @@ writers.writeRustBin "check-hash" { } # rust
             if ty.is_dir() && !ty.is_symlink() {
                 copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
             } else {
-                fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+                unix_fs::symlink(entry.path(), dst.as_ref().join(entry.file_name()))?;
             }
         }
         Ok(())
