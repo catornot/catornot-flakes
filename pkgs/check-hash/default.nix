@@ -9,6 +9,7 @@ writers.writeRustBin "check-hash" { } # rust
     use std::{env, io};
     use std::path::{PathBuf, Path};
     use std::fs::{remove_dir_all, read_to_string, copy};
+    use std::io::Write;
 
     const INSTALLED: &str = "${installed}";
     const ORIGINAL: &str = "${original}";
@@ -28,12 +29,12 @@ writers.writeRustBin "check-hash" { } # rust
       };
 
       if !PathBuf::from(&installed).join(&hash_file_name).exists() || read_to_string(PathBuf::from(&installed).join(&hash_file_name))? != read_to_string(PathBuf::from(&original).join(&hash_file_name))? {
-        println!("found missmatch; replacing");
+        _ = writeln!(std::io::stdout(), "found missmatch; replacing");
         _ = remove_dir_all(&installed);
         // TODO: do not copy out of symlinks
         copy_dir_all(original, installed)?;
       } else {
-        println!("all good");      
+        _ = writeln!(std::io::stdout(), "all good");
       }
 
       Ok(())

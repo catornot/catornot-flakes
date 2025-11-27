@@ -35,6 +35,7 @@
                   northstar-dedicated = config.packages.northstar-dedicated;
                   check-hash = config.packages.check-hash;
                   rustcon = config.packages.rustcon;
+                  playlistrotations = config.packages.playlistrotations;
                 }
               );
           }

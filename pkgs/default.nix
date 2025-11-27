@@ -70,6 +70,7 @@
             );
             inherit (self.libExport pkgs) makeR2Northstar;
           };
+          playlistrotations = pkgs.callPackage ./playlistrotations { rotationsDef = ""; };
           sere = pkgs.callPackage ./sere { inherit pkgs-win; };
           tf2vpk = pkgs.callPackage ./tf2vpk { };
           flightcore = pkgs.callPackage ./flightcore { };

@@ -10,6 +10,7 @@ let
     type: value:
     {
       "int" = lib.toInt;
+      "bool" = value: value == "true";
       "str" = str: "\"${builtins.toString str}\"";
       "port" = lib.toInt;
       "float" = (
@@ -80,6 +81,24 @@ let
       };
     };
   };
+  rotationsModule = lib.types.submodule {
+    options = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        description = ''
+          enables r2rcon-rs and adds it to your packages
+        '';
+        default = false;
+      };
+      playlistDefinition = lib.mkOption {
+        type = lib.types.str;
+        description = ''
+          defines how the playlist is shuffled
+        '';
+        default = "";
+      };
+    };
+  };
   profileModule = lib.types.submodule {
     options = (
       {
@@ -97,6 +116,20 @@ let
           '';
           default = [ ];
         };
+        mods = lib.mkOption {
+          type = lib.types.listOf lib.types.path;
+          description = ''
+            some mods
+          '';
+          default = [ ];
+        };
+        plugins = lib.mkOption {
+          type = lib.types.listOf lib.types.path;
+          description = ''
+            some plugins
+          '';
+          default = [ ];
+        };
         bp-ort = lib.mkOption {
           type = bpOrtModule;
           description = ''
@@ -108,6 +141,15 @@ let
           type = rconModule;
           description = ''
             the a special place for configuring and setting up rcon
+          '';
+          default = {
+            enable = false;
+          };
+        };
+        playlistRotations = lib.mkOption {
+          type = rotationsModule;
+          description = ''
+            the a special place for configuring and setting up PlaylistRotations mod
           '';
           default = {
             enable = false;
@@ -131,6 +173,13 @@ let
           default = 37015;
           description = ''
             Override the Game Port the server uses.
+          '';
+        };
+        memoryHigh = lib.mkOption {
+          type = lib.types.str;
+          default = null;
+          description = ''
+            Sets the a soft "limit" for ram usage for this systemd service
           '';
         };
 
@@ -171,6 +220,9 @@ in
     package-nswine-run = lib.mkPackageOption self.packages.${pkgs.system} "nswine-run" { };
     package-northstar-dedicated =
       lib.mkPackageOption self.packages.${pkgs.system} "northstar-dedicated"
+        { };
+    package-playlistrotations =
+      lib.mkPackageOption self.packages.${pkgs.system} "playlistrotations"
         { };
 
     stateDir = lib.mkOption {
@@ -215,6 +267,12 @@ in
         }
       '';
     };
+
+    socket = lib.mkOption {
+      type = lib.types.str;
+      default = "/run/northstar-dedicated.sock";
+      description = "Socket for the shell on dedicated server.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -229,25 +287,64 @@ in
         group = cfg.user;
         home = cfg.stateDir;
         isSystemUser = lib.mkDefault true;
-        shell =
-          (pkgs.writeShellApplication {
-            name = "rustcon-psk";
-            text = "RUSTCON_PASS=${cfg.profile.rcon.password} ${lib.getExe cfg.package-rustcon}";
-          })
-          // {
-            shellPath = "bin/rustcon-psk";
-          };
+        # shell =
+        #   (pkgs.writeShellApplication {
+        #     name = "rustcon-psk";
+        #     text = "RUSTCON_PASS=${cfg.profile.rcon.password} ${lib.getExe cfg.package-rustcon}";
+        #   })
+        #   // {
+        #     shellPath = "bin/rustcon-psk";
+        #   };
+        shell = pkgs.bash;
         useDefaultShell = false;
-        openssh.authorizedKeys.keys = if cfg.profile.rcon.enable then cfg.profile.rcon.sshKeys else [ ];
+        openssh.authorizedKeys.keys =
+          let
+            ssh-to-socket = (
+              pkgs.writeShellApplication {
+                name = "ssh-to-socket.sh";
+                # text = "exec ${lib.getExe pkgs.socat} STDIO UNIX-CONNECT:${cfg.socket}";
+                text = "exec ${
+                  lib.getExe (
+                    pkgs.writeShellApplication {
+                      name = "rustcon-psk";
+                      text = "RUSTCON_PASS=${cfg.profile.rcon.password} ${lib.getExe cfg.package-rustcon}";
+                    }
+                  )
+                }";
+              }
+            );
+          in
+          builtins.map (key: "command=\"${lib.getExe ssh-to-socket}\",restrict ${key}") (
+            if cfg.profile.rcon.enable then cfg.profile.rcon.sshKeys else [ ]
+          );
         ignoreShellProgramCheck = true;
+      };
+    };
+
+    systemd.sockets.northstar-dedicated = {
+      description = "Socket for Northstar dedicated server";
+      wantedBy = [ "sockets.target" ];
+
+      socketConfig = {
+        ListenStream = "${cfg.socket}";
+        SocketMode = "0660";
+        SocketUser = cfg.user;
+        SocketGroup = "wheel";
+        Accept = true;
       };
     };
 
     systemd.services.northstar-dedicated = {
       description = "Northstar dedicated server";
       requires = [ "network.target" ];
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      after = [
+        "network.target"
+        "northstar-dedicated.socket"
+      ];
+      wantedBy = [
+        "multi-user.target"
+        "northstar-dedicated.socket"
+      ];
 
       path = [
         cfg.package-nswine
@@ -275,13 +372,20 @@ in
 
           northstar-packages =
             (builtins.map lib.nameToPackage cfg.profile.package-names) ++ cfg.profile.packages;
-          northstar-mods = lib.optional cfg.profile.bp-ort.enable (
-            pkgs.symlinkJoin {
-              name = "catornot-bp_ort-${bp-ort-mod.version}";
-              paths = [ bp-ort-mod ];
-              postBuild = unwrapDir "mods";
-            }
-          );
+          northstar-mods =
+            (lib.optional cfg.profile.bp-ort.enable (
+              pkgs.symlinkJoin {
+                name = "catornot-bp_ort-${bp-ort-mod.version}";
+                paths = [ bp-ort-mod ];
+                postBuild = unwrapDir "mods";
+              }
+            ))
+            ++ (lib.optional cfg.profile.playlistRotations.enable (
+              cfg.package-playlistrotations.override {
+                rotationsDef = cfg.profile.playlistRotations.playlistDefinition;
+              }
+            ))
+            ++ cfg.profile.mods;
           northstar-plugins =
             (lib.optional cfg.profile.bp-ort.enable (
               pkgs.symlinkJoin {
@@ -290,6 +394,7 @@ in
                   inputs.bp-ort.packages.${pkgs.system}.bp-ort
                   inputs.bp-ort.packages.${pkgs.system}.octbots
                   inputs.bp-ort.packages.${pkgs.system}.ranim
+                  inputs.bp-ort.packages.${pkgs.system}.serialized-io
                 ];
                 postBuild = unwrapDir "bin";
               }
@@ -302,7 +407,8 @@ in
                 ];
                 postBuild = unwrapDir "bin";
               }
-            ));
+            ))
+            ++ cfg.profile.plugins;
           northstar-extras = (
             lib.optional cfg.profile.bp-ort.enable (
               pkgs.symlinkJoin {
@@ -385,6 +491,7 @@ in
         ReadWritePaths = "${cfg.stateDir}";
         NoExecPaths = "/";
         ExecPaths = "/nix ${cfg.stateDir}";
+        MemoryHigh = cfg.memoryHigh or "16G";
 
         Environment = [
           "NSWRAP_DEBUG=0"
@@ -434,6 +541,11 @@ in
         Restart = "always";
         RestartSec = "10s";
         WorkingDirectory = cfg.stateDir;
+
+        # TODO: make this work
+        # StandardInput = "socket";
+        # StandardOutput = "socket";
+        # StandardError = "journal";
       };
     };
 

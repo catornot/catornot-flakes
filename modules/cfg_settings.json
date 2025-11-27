@@ -11,7 +11,7 @@
   "ns_private_match_last_map": { "type": "str", "value": "mp_glitch", "description": "default map" },
   "ns_private_match_last_mode": { "type": "str", "value": "tdm", "description": "default playlistVars" },
   "ns_private_match_countdown_length": { "type": "int", "value": "30", "description": "countdown in lobby" },
-  "ns_private_match_override_maxplayers": { "type": "int", "value": "16", "description": "max players in lobby" },
+  "ns_private_match_override_maxplayers": { "type": "bool", "value": "false", "description": "max players in lobby" },
   "ns_should_return_to_lobby": { "type": "int", "value": "1", "description": "Changes if the server will return to lobby after a game, if 0, this will go to the next map/mode in the playlist" },
   "ns_private_match_only_host_can_change_settings": { "type": "int", "value": "0", "description": "this will make it so the settings can't be changed (0=all|1=map/gamemode|2=nothing)" },
   "ns_private_match_only_host_can_start": { "type": "int", "value": "0", "description": "If 1 only the host can press the start match button, if 0 anyone can press the start match button" },
