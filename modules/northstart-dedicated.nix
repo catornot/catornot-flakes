@@ -212,17 +212,17 @@ in
   options.services.northstar-dedicated = {
     enable = lib.mkEnableOption "Northstar Dedicated Server";
 
-    package-rustcon = lib.mkPackageOption self.packages.${pkgs.system} "rustcon" { };
-    package-check-hash = lib.mkPackageOption self.packages.${pkgs.system} "check-hash" { };
-    package-nswine-env = lib.mkPackageOption self.packages.${pkgs.system} "nswine-env" { };
-    package-nswine = lib.mkPackageOption self.packages.${pkgs.system} "nswine" { };
-    package-nswrap = lib.mkPackageOption self.packages.${pkgs.system} "nswrap" { };
-    package-nswine-run = lib.mkPackageOption self.packages.${pkgs.system} "nswine-run" { };
+    package-rustcon = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "rustcon" { };
+    package-check-hash = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "check-hash" { };
+    package-nswine-env = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine-env" { };
+    package-nswine = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine" { };
+    package-nswrap = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswrap" { };
+    package-nswine-run = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine-run" { };
     package-northstar-dedicated =
-      lib.mkPackageOption self.packages.${pkgs.system} "northstar-dedicated"
+      lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "northstar-dedicated"
         { };
     package-playlistrotations =
-      lib.mkPackageOption self.packages.${pkgs.system} "playlistrotations"
+      lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "playlistrotations"
         { };
 
     stateDir = lib.mkOption {
@@ -367,8 +367,8 @@ in
             mkdir -p $out
             mv $TMP/* $out
           '';
-          bp-ort-mod = inputs.bp-ort.packages.${pkgs.system}.mod;
-          navmeshes = inputs.bp-ort.packages.${pkgs.system}.navmeshes;
+          bp-ort-mod = inputs.bp-ort.packages.${pkgs.stdenv.hostPlatform.system}.mod;
+          navmeshes = inputs.bp-ort.packages.${pkgs.stdenv.hostPlatform.system}.navmeshes;
 
           northstar-packages =
             (builtins.map lib.nameToPackage cfg.profile.package-names) ++ cfg.profile.packages;
@@ -391,10 +391,10 @@ in
               pkgs.symlinkJoin {
                 name = "catornot-bp_ort-${bp-ort-mod.version}";
                 paths = [
-                  inputs.bp-ort.packages.${pkgs.system}.bp-ort
-                  inputs.bp-ort.packages.${pkgs.system}.octbots
-                  inputs.bp-ort.packages.${pkgs.system}.ranim
-                  inputs.bp-ort.packages.${pkgs.system}.serialized-io
+                  inputs.bp-ort.packages.${pkgs.stdenv.hostPlatform.system}.bp-ort
+                  inputs.bp-ort.packages.${pkgs.stdenv.hostPlatform.system}.octbots
+                  inputs.bp-ort.packages.${pkgs.stdenv.hostPlatform.system}.ranim
+                  inputs.bp-ort.packages.${pkgs.stdenv.hostPlatform.system}.serialized-io
                 ];
                 postBuild = unwrapDir "bin";
               }
@@ -403,7 +403,7 @@ in
               pkgs.symlinkJoin {
                 name = "catornot-r2rcon-rs";
                 paths = [
-                  inputs.r2rcon-rs.packages.${pkgs.system}.default
+                  inputs.r2rcon-rs.packages.${pkgs.stdenv.hostPlatform.system}.default
                 ];
                 postBuild = unwrapDir "bin";
               }
