@@ -75,6 +75,7 @@
           tf2vpk = pkgs.callPackage ./tf2vpk { };
           flightcore = pkgs.callPackage ./flightcore { };
           rustcon = pkgs.callPackage ./rustcon { };
+          satisfactory-3d-map = pkgs.callPackage ./satisfactory-3d-map { };
         };
     };
 }
