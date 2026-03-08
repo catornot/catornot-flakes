@@ -212,12 +212,20 @@ in
   options.services.northstar-dedicated = {
     enable = lib.mkEnableOption "Northstar Dedicated Server";
 
-    package-rustcon = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "rustcon" { };
-    package-check-hash = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "check-hash" { };
-    package-nswine-env = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine-env" { };
+    package-rustcon =
+      lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "rustcon"
+        { };
+    package-check-hash =
+      lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "check-hash"
+        { };
+    package-nswine-env =
+      lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine-env"
+        { };
     package-nswine = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine" { };
     package-nswrap = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswrap" { };
-    package-nswine-run = lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine-run" { };
+    package-nswine-run =
+      lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "nswine-run"
+        { };
     package-northstar-dedicated =
       lib.mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "northstar-dedicated"
         { };
