@@ -16,43 +16,69 @@
   fetchFromGitHub,
   applyPatches,
   libappimage,
+  runCommand,
+  jq,
   symlinkJoin,
 }:
 
-rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "FlightCore";
-  version = "3.2.0";
-
+let
   src = applyPatches {
     src = fetchFromGitHub {
       owner = "R2NorthstarTools";
-      repo = finalAttrs.pname;
-      tag = "v${finalAttrs.version}";
-      hash = "sha256-MFnW9cXFzqmdtC31r8cRcihV3NjGAC6+2/DnNVMheCI=";
+      repo = pname;
+      tag = "v${version}";
+      hash = "sha256-i/6ywfXlUOBmiE9MhRYsDCt8eNkIOZHRxTJwWTmZ4Ms=";
     };
     patches = [
-      ./bundle_app.patch
     ];
   };
+  pname = "FlightCore";
+  version = "3.2.1";
+  mergedNpmDeps =
+    let
+      srcTop = src; # top deps folder
+      srcVue = "${src}/src-vue"; # vue deps folder
+    in
+    runCommand "merged-npm-deps"
+      {
+        buildInputs = [
+          nodejs
+          jq
+        ];
+      }
+      ''
+        mkdir -p $out
+        mkdir -p $TMPDIR/merged
+        # Copy vue package.json dependencies into top's package.json
+        jq -s '.[0] * .[1]' \
+           ${srcTop}/package.json \
+           ${srcVue}/package.json > $TMPDIR/merged/package.json
+        chmod +rw $TMPDIR/merged -R
+        cd $TMPDIR/merged
+        npm install --package-lock-only
+        cp $TMPDIR/merged/* $out
+      '';
+  joined = symlinkJoin{
+    name = pname;
+    paths = [
+      ./.
+      src
+    ];
+  };
+in
 
-  cargoHash = "sha256-qh8mHDgIwh20I8P8rx25CZIVB8X4ZtY7/lyGQ3xy/7k=";
+rustPlatform.buildRustPackage (finalAttrs: {
+
+  inherit version pname;
+  src = joined; 
+
+  cargoHash = "sha256-ILsRsYHO1OMyfORxrUkr1jyjncLCGag+KefrWHmHpqQ=";
 
   # Assuming our app's frontend uses `npm` as a package manager
-  npmDeps = "${symlinkJoin {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    paths = [
-      (fetchNpmDeps {
-        name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps-top";
-        inherit (finalAttrs) src;
-        hash = "sha256-6k582aTReT9JLXmIw4i3iccLSVCKsnCthVfeF8vrsp4=";
-      })
-      (fetchNpmDeps {
-        name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps-vue";
-        src = "${finalAttrs.src}/src-vue";
-        hash = "sha256-QhUPkCBK1kcAF7gByFxlg8Ca9PLF3evCl0QYEPP/Q2c=";
-      })
-    ];
-  }}";
+  npmDeps = fetchNpmDeps {
+    src = joined;
+    hash = "sha256-RPpmw1AKncTNtPL+RvpS6X2zGAbyljY++aP0AObjsg8=";
+  };
 
   nativeBuildInputs = [
     # Pull in our main hook
@@ -76,6 +102,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     webkitgtk_4_1
   ];
+
+  buildPhase = ''
+    export NODE_PATH=$npmDeps/lib/node_modules
+    npx tauri build
+  '';
 
   # Set our Tauri source directory
   cargoRoot = "src-tauri";
