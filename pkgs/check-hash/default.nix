@@ -3,6 +3,7 @@
   original ? "",
   hashFileName ? "",
   writers,
+  useSymlinks ? true,
 }:
 writers.writeRustBin "check-hash" { } # rust
   ''
@@ -50,7 +51,11 @@ writers.writeRustBin "check-hash" { } # rust
             if ty.is_dir() && !ty.is_symlink() {
                 copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
             } else {
-                unix_fs::symlink(entry.path(), dst.as_ref().join(entry.file_name()))?;
+                if ${if useSymlinks then "true" else "false"} {
+                  unix_fs::symlink(entry.path(), dst.as_ref().join(entry.file_name()))?;
+                } else {
+                  copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+                }
             }
         }
         Ok(())

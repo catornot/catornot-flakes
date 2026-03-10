@@ -76,6 +76,15 @@
           flightcore = pkgs.callPackage ./flightcore { };
           rustcon = pkgs.callPackage ./rustcon { };
           satisfactory-3d-map = pkgs.callPackage ./satisfactory-3d-map { };
+          northstar-dedicated-docker = pkgs.callPackage ./northstar-dedicated-docker {
+            inherit
+              nswrap
+              nswine
+              self
+              check-hash
+              ;
+            northstar = northstar-dedicated;
+          };
         };
     };
 }

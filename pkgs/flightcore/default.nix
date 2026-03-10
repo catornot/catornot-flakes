@@ -58,7 +58,7 @@ let
         npm install --package-lock-only
         cp $TMPDIR/merged/* $out
       '';
-  joined = symlinkJoin{
+  joined = symlinkJoin {
     name = pname;
     paths = [
       ./.
@@ -70,7 +70,7 @@ in
 rustPlatform.buildRustPackage (finalAttrs: {
 
   inherit version pname;
-  src = joined; 
+  src = joined;
 
   cargoHash = "sha256-ILsRsYHO1OMyfORxrUkr1jyjncLCGag+KefrWHmHpqQ=";
 

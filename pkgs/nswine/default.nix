@@ -29,7 +29,7 @@ let
     ];
   };
   patchthething =
-    writers.writeRustBin "nswine-run" { } # rust
+    writers.writeRustBin "patchthething" { } # rust
       ''
         use std::path::PathBuf;
         use std::env;
