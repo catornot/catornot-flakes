@@ -81,9 +81,9 @@
               nswrap
               nswine
               self
-              check-hash
+              northstar
+              titanfall2
               ;
-            northstar = northstar-dedicated;
           };
         };
     };

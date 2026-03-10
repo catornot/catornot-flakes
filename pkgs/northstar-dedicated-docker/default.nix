@@ -1,26 +1,20 @@
 {
   dockerTools,
   writeScriptBin,
-  lib,
-  buildEnv,
-  runtimeShell,
+  bash,
+  coreutils,
+  findutils,
+  gnugrep,
+  gnused,
+  gawk,
   symlinkJoin,
   nswrap,
   nswine,
   northstar,
-  check-hash,
+  titanfall2,
   self,
 }:
 let
-  entrypoint = (writeScriptBin "entrypoint.sh" (builtins.readFile ./entrypoint.sh));
-  copy-northstar = lib.getExe (
-    check-hash.override {
-      original = "/mnt/northstar";
-      installed = "${northstar}";
-      hashFileName = "r2NorthstarHash";
-      useSymlinks = false;
-    }
-  );
   wrapInFolder = name: ''
     if [ -z "$(ls -A $out)" ]; then
       echo "Empty"
@@ -30,48 +24,48 @@ let
       mv $TMP/* $out/${name}
     fi
   '';
-  mnt-northstar = symlinkJoin {
-    name = "mnt/northstar";
-    paths = [ northstar ];
-    postBuild = wrapInFolder "mnt/northstar";
+  mkMnt = pkg: mnt: symlinkJoin {
+    name = mnt;
+    paths = [ pkg ];
+    postBuild = wrapInFolder mnt;
   };
+  entrypoint = (writeScriptBin "entrypoint.sh" (builtins.readFile ./entrypoint.sh));
+  mnt-northstar = mkMnt northstar "mnt/northstar";
+  mnt-titanfall2 = mkMnt titanfall2 "mnt/titanfall2";
 in
-# layared image is a bit more complicated to setup since it will have by default symlinks to stuff... afaik
-dockerTools.buildImage {
+dockerTools.buildLayeredImage {
   name = "northstar-dedicated-docker";
   tag = self.rev or "dev";
-  copyToRoot = buildEnv {
-    name = "image-root";
-    paths = [
-      nswrap
-      nswine
-      entrypoint
-      mnt-northstar
-    ];
-    pathsToLink = [
-      "/bin"
-      "/lib"
-      "/share"
-      "/mnt"
-    ];
-  };
+  contents = [
+    bash
+    coreutils
+    findutils
+    gnugrep
+    gnused
+    gawk
+    nswrap
+    nswine
+    entrypoint
+    mnt-northstar
+    mnt-titanfall2
+  ];
 
-  # runAsRoot = ''
-  #   !${runtimeShell}
-  #   mkdir -p /mnt
-  #   mkdir -p /mnt/northstar
-  #   ${copy-northstar}
-  # '';
+  extraCommands = ''
+    mkdir -p tmp
+    mkdir -p run
+    mkdir -p var
+    mkdir -p home
+    mkdir -p tmp/northstar
+    mkdir -p home/northstar
+  '';
 
   config = {
     WorkingDir = "/home/northstar";
-    Volumes = {
-      "/home/northstar" = { };
-    };
-    Entrypoint = [ "entrypoint.sh" ];
+    Entrypoint = [ "/bin/entrypoint.sh" ];
     Env = [
       "WINEPREFIX=/home/northstar/.wine"
       "NSWRAP_EXTWINE=1"
+      "WINEDEBUG=-all"
     ];
   };
 }
