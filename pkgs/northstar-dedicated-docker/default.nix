@@ -74,7 +74,4 @@ dockerTools.buildImage {
       "NSWRAP_EXTWINE=1"
     ];
   };
-
-  diskSize = 1024 * 2;
-  buildVMMemorySize = 512 * 8;
 }
