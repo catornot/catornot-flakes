@@ -9,6 +9,7 @@
     };
     bp-ort.url = "github:catornot/bp-ort";
     r2rcon-rs.url = "github:catornot/r2rcon-rs";
+    erosanix.url = "github:emmanuelrosa/erosanix";
   };
 
   outputs =

@@ -31,6 +31,7 @@
             config.allowUnfree = true;
             config.allowUnsupportedSystem = true;
           };
+          erosanixLib = inputs.erosanix.lib."${system}";
         in
         rec {
           titanfall2 = pkgs.callPackage ./titanfall2 { };
@@ -85,6 +86,7 @@
               titanfall2
               ;
           };
+          minecraft-lce-wine = pkgs.callPackage ./minecraft-lce-wine {inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon; };
         };
     };
 }

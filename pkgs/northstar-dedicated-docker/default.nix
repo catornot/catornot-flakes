@@ -24,11 +24,13 @@ let
       mv $TMP/* $out/${name}
     fi
   '';
-  mkMnt = pkg: mnt: symlinkJoin {
-    name = mnt;
-    paths = [ pkg ];
-    postBuild = wrapInFolder mnt;
-  };
+  mkMnt =
+    pkg: mnt:
+    symlinkJoin {
+      name = mnt;
+      paths = [ pkg ];
+      postBuild = wrapInFolder mnt;
+    };
   entrypoint = (writeScriptBin "entrypoint.sh" (builtins.readFile ./entrypoint.sh));
   mnt-northstar = mkMnt northstar "mnt/northstar";
   mnt-titanfall2 = mkMnt titanfall2 "mnt/titanfall2";
