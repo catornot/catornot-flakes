@@ -86,7 +86,7 @@
               titanfall2
               ;
           };
-          minecraft-lce-wine = pkgs.callPackage ./minecraft-lce-wine {inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon; };
+          minecraft-lce-wine = pkgs.callPackage ./minecraft-lce-wine {inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon; inherit check-hash; };
         };
     };
 }
