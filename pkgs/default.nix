@@ -17,6 +17,7 @@
         inherit system;
         config.allowUnfree = true;
         config.allowUnsupportedSystem = true;
+        config.microsoftVisualStudioLicenseAccepted = true;
       };
 
       packages =
@@ -86,7 +87,11 @@
               titanfall2
               ;
           };
-          minecraft-lce-wine = pkgs.callPackage ./minecraft-lce-wine {inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon; inherit check-hash; };
+          minecraft-lce-wine = pkgs.callPackage ./minecraft-lce-wine {
+            inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon;
+            inherit check-hash;
+          };
+          minecraft-consoles = pkgs.callPackage ./minecraft-consoles { };
         };
     };
 }

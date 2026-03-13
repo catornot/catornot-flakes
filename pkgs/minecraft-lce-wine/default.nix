@@ -1,6 +1,5 @@
 {
   fetchzip,
-  fetchurl,
   lib,
   copyDesktopIcons,
   copyDesktopItems,
@@ -19,11 +18,6 @@ let
     sha256 = "sha256-CCvw5BNd2H8dowqXABPVDQ8SHE8inRGevYjeZk5WI+U=";
     stripRoot = false;
   };
-
-  src = fetchurl {
-    url = "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/Minecraft.Client.exe";
-    sha256 = "sha256-wTeEG2TMMuuBc6QHHhcsIK2p3ytxLd2qPkuPqd0ECP0=";
-  };
 in
 mkWindowsAppNoCC rec {
   # Use mkWindowsApp just like mkDerivation.
@@ -37,7 +31,8 @@ mkWindowsAppNoCC rec {
   pname = "MinecraftConsoles";
   version = "0.0.0";
 
-  inherit src graphicsDriver;
+  inherit graphicsDriver;
+  src = assets;
 
   dontUnpack = true;
   wineArch = "win64";
@@ -57,7 +52,7 @@ mkWindowsAppNoCC rec {
   # wine, winetricks, cabextract, $WINEPREFIX, $WINEARCH, and $WINEDLLOVERRIDES are available and set up.
   winAppInstall = /* bash */ ''
     # ${lib.getExe check-hash} "$WINEPREFIX/drive_c" "${assets}" minecraftHash
-    for f in "${assets}"/*; do
+    for f in "${src}"/*; do
       ln -sf "$f" "$WINEPREFIX/drive_c/"
     done
     rm "$WINEPREFIX/drive_c/Windows64" &2> /dev/null
@@ -124,7 +119,7 @@ mkWindowsAppNoCC rec {
 
   desktopIcon = makeDesktopIcon {
     name = pname;
-    src = "${assets}/Common/res/pack.png";
+    src = "${src}/Common/res/pack.png";
     icoIndex = 0;
   };
 
