@@ -61,7 +61,7 @@ mkWindowsAppNoCC rec {
     mkdir -p "$WINEPREFIX/drive_c/Windows64"
     mkdir -p "$WINEPREFIX/drive_c/Windows64/GameHDD"
 
-    cp ${src} "$WINEPREFIX/drive_c/Minecraft.Client.exe"
+    cp "${src}/Minecraft.Client.exe" "$WINEPREFIX/drive_c/Minecraft.Client.exe"
   '';
 
   # This is executed after winAppInstall (if needed)  to run the Windows application.

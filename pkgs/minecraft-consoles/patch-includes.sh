@@ -8,7 +8,15 @@ find . -type f \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" \) -exec \
 # find /build/source -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' -o -name '*.c' \) \
 #   -exec sed -i 's@#include\s*"\.\./Minecraft\.Client/\(.*\)"@#include "\1"@g' {} +
 
-sed -i 's|#include\s*"\.\./Minecraft\.Client/\(.*\)"|#include "build/source/Minecraft.Client/\1"|g' **/*.cpp **/*.h
+sed -i 's|#include\s*"\.\./Minecraft\.Client/\(.*\)"|#include "\1"|g' **/*.cpp **/*.h
+sed -i 's|#include\s*"build/source/Minecraft\.Client/\(.*\)"|#include "\1"|g' **/*.cpp **/*.h
+# normalize Common includes so they resolve from Minecraft.Client root
+sed -i 's|#include\s*"Common/\(.*\)"|#include "Minecraft.Client/Common/\1"|g' **/*.cpp **/*.h
+# case-sensitive filesystem fix for Windows-style filename
+sed -i 's|Minecraft.Client/Common/App_defines.h|Minecraft.Client/Common/App_Defines.h|g' **/*.cpp **/*.h
+sed -i 's/\bGlowstonetile\b/GlowstoneTile/g' **/*.cpp **/*.h
+sed -i 's/\SnowBallItem\b/SnowballItem/g' **/*.cpp **/*.h
+sed -i 's/\b"biome.h"\b/"Biome.h"/g' **/*.cpp **/*.h
 
 sed -i '/target_include_directories(MinecraftWorld PRIVATE/,/)/c\
 target_include_directories(MinecraftWorld PRIVATE\

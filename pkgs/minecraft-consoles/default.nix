@@ -93,9 +93,10 @@ let
         ${WINSDK_INCLUDE}/shared
         ${WINSDK_INCLUDE}/um
         ${WINSDK_INCLUDE}/winrt
-        ${CMAKE_CURRENT_SOURCE_DIR}                        
-        ${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client       
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client
         ${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Common
+        ${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/4JLibs/inc
         ${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.World
         ${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.World/x64headers
       )
