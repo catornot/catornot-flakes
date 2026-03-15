@@ -288,7 +288,8 @@
         "erosanix": "erosanix",
         "flake-parts": "flake-parts_2",
         "nixpkgs": "nixpkgs_3",
-        "r2rcon-rs": "r2rcon-rs"
+        "r2rcon-rs": "r2rcon-rs",
+        "rust-overlay": "rust-overlay_3"
       }
     },
     "rust-overlay": {
@@ -325,6 +326,26 @@
         "owner": "oxalica",
         "repo": "rust-overlay",
         "rev": "1cbe817fd8c64a9f77ba4d7861a4839b0b15983e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rust-overlay_3": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1773457417,
+        "narHash": "sha256-waABTSxPdbxml4BhcabHhyQF02Qnj27qRU4ard0mTQo=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "055977c30249484010750e03074c744dcdaa0d23",
         "type": "github"
       },
       "original": {

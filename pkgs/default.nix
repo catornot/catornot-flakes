@@ -18,6 +18,7 @@
         config.allowUnfree = true;
         config.allowUnsupportedSystem = true;
         config.microsoftVisualStudioLicenseAccepted = true;
+        overlays = [ (import inputs.rust-overlay) ];
       };
 
       packages =
@@ -92,6 +93,10 @@
             inherit check-hash;
           };
           minecraft-consoles = pkgs.callPackage ./minecraft-consoles { };
+          maxima = pkgs.callPackage ./maxima { };
+          titanfall2-wine = pkgs.callPackage ./titanfall-wine {
+            inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon;
+          };
         };
     };
 }

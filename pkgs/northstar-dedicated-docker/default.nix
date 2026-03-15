@@ -59,9 +59,13 @@ dockerTools.buildLayeredImage {
     mkdir -p home
     mkdir -p tmp/northstar
     mkdir -p home/northstar
+    chmod 777 home/northstar
   '';
 
   config = {
+    Volumes = {
+      "/home/northstar" = { };
+    };
     WorkingDir = "/home/northstar";
     Entrypoint = [ "/bin/entrypoint.sh" ];
     Env = [

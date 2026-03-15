@@ -100,6 +100,9 @@ stdenvNoCC.mkDerivation {
 
       ${lib.getExe patchthething} $out/lib/wine/x86_64-windows/explorer.exe
 
+      # remove extra stuff from share
+      rm -r $out/share/wine/fonts
+
       xxd ${wine-ns}/lib/wine/x86_64-windows/explorer.exe > $TMP/diff1
       xxd $out/lib/wine/x86_64-windows/explorer.exe > $TMP/diff2
 

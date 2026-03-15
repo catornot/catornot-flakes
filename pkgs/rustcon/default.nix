@@ -4,7 +4,6 @@
   fetchFromGitHub,
   stdenv,
 }:
-
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rustcon";
   version = "3.2.0";
