@@ -19,11 +19,18 @@
   libGL,
   autoPatchelfHook,
   makeWrapper,
+  stdenv,
+  toolchain ? pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml,
+  rustc ? null,
 }:
 let
-  toolchain = pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+  isLinux =
+    attrs:
+    attrs.CARGO_BUILD_TARGET != "x86_64-pc-windows-gnu"
+    && attrs.CARGO_BUILD_TARGET != "x86_64-pc-windows-mvsc"
+    && stdenv.hostPlatform.isLinux;
 in
-rustPlatform.buildRustPackage (finalAttrs: {
+(rustPlatform.buildRustPackage.override { rustc = rustc; }) (finalAttrs: {
   pname = "Maxima";
   version = "0.0.0";
 
@@ -42,13 +49,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     };
   };
 
-  nativeBuildInputs = [
+  nativeBuildInputs = lib.optionals (isLinux finalAttrs) [
     toolchain
     autoPatchelfHook
     makeWrapper
   ];
 
-  buildInputs = [
+  buildInputs = lib.optionals (isLinux finalAttrs) [
     protobuf_25
     protobuf
     pkg-config
@@ -70,7 +77,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=cloudsync"
   ];
 
-  runtimeDependencies = [
+  runtimeDependencies = lib.optionals (isLinux finalAttrs) [
     expat
     fontconfig
     freetype
@@ -93,9 +100,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     export PROTOC=${lib.getExe' protobuf "protoc"} 
   '';
 
-  postInstall = ''
-    wrapProgram $out/bin/maxima --prefix LD_LIBRARY_PATH : ${finalAttrs.LD_LIBRARY_PATH}
-  '';
+  postInstall =
+    if (isLinux finalAttrs) then
+      ''
+        wrapProgram $out/bin/maxima --prefix LD_LIBRARY_PATH : ${finalAttrs.LD_LIBRARY_PATH}
+      ''
+    else
+      "";
 
   meta = {
     description = "A free and open-source replacement for the EA Desktop Launcher for Linux and Windows.";
