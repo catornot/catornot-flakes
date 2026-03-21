@@ -33,13 +33,36 @@ jobs:
         run: |
           nix run github:Mic92/nix-update -- --flake northstar --use-github-releases
 
+      - name: Create pull request for Northstar Releases update
+        id: create-pr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: "chore(deps): Update Northstar Releases"
+          branch: update-releases
+          title: "chore(deps): Update Northstar Releases"
+          body: "Update Northstar Releases"
+          author: '${{ steps.app-token.outputs.app-slug }}[bot]'
+          committer: '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+          labels: |
+            dependencies
+          delete-branch: true
+
+      - name: Enable auto-merge
+        id: enable-auto-merge
+        if: steps.create-pr.outputs.pull-request-number
+        run: |
+          gh pr merge --auto -ds ${{ steps.create-pr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ steps.generate-automerge-token.outputs.token }}
+
       - name: Update flake inputs
         uses: mic92/update-flake-inputs@main
         # github-token defaults to ${{ github.token }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           # Optional: exclude specific files or inputs
-          exclude-patterns: 'flake.nix#flake-utils,flake.nix#nixpkgs'
+          exclude-patterns: 'flake.nix#flake-utils,flake.nix#nixpkgs,flakes.nix#rust-overlay,flakes.nix#erosanix'
           # Optional: add custom labels (default: 'dependencies')
           # pr-labels: 'dependencies,automated'
           # Optional: enable auto-merge (default: false)
