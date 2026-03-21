@@ -1,31 +1,35 @@
 {
   stdenvNoCC,
   lib,
-  fetchurl,
-  unzip,
+  fetchzip,
+  version ? "1.31.4",
+  sha256 ? "sha256-2MEt8FE/NvHRkpUMc9xnl2TfR/i4V+0vSkFOanPzO8w=",
+  nix-update-script,
 }:
 let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "Northstar";
-  version = "1.31.4";
+  inherit version;
 
-  src = fetchurl {
+  src = fetchzip {
     url = "https://github.com/R2Northstar/Northstar/releases/download/v${version}/${pname}.release.v${version}.zip";
-    sha256 = "sha256-3LnqvOcAC5snM9EApYIXx4vZxTesL+Eas9G8im4Mi+k=";
+    stripRoot = false;
+    inherit sha256;
   };
 
-  dontUnpack = true;
-
   installPhase = ''
-    ${unzip}/bin/unzip $src -d $out
+    mkdir $out
+    cp -r $src $out
   '';
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Northstar Client";
     homepage = "https://northstar.tf/";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
+    platforms = builtins.concatLists (builtins.attrValues lib.platforms);
     maintainers = [ ];
   };
 }
