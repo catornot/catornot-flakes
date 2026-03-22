@@ -88,6 +88,7 @@
             inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon;
             inherit maxima-windows;
           };
+          mrvn-radiant = pkgs.callPackage ./mrvn-radiant { };
         };
     };
 }

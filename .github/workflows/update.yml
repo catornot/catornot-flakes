@@ -24,7 +24,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-            token: ${{ steps.app-token.outputs.token }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup Nix
         uses: cachix/install-nix-action@v31
@@ -69,3 +69,7 @@ jobs:
           auto-merge: 'true'
           # Optional: choose merge method when auto-merge is enabled (default: MERGE)
           auto-merge-method: 'SQUASH'
+          git-author-name: northstar-nightly-flake-updater[bot]
+          git-author-email: northstar-nightly-flake-updater[bot]@users.noreply.github.com
+          git-committer-name: northstar-nightly-flake-updater[bot]
+          git-committer-email: northstar-nightly-flake-updater[bot]@users.noreply.github.com

@@ -516,6 +516,7 @@ in
             "${cfg.stateDir}/titanfall2"
             "${lib.getExe cfg.package-nswrap}"
             "-dedicated"
+            "-mutiple" # allow multiple versions to be ran
             ''+ns_server_password "${
               if cfg.profile.passwordFile == "/run/secrets/not-my-server-password" then
                 cfg.profile.password

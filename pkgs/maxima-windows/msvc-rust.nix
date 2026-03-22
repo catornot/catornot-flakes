@@ -49,6 +49,6 @@ stdenvNoCC.mkDerivation {
 
   meta = rustc.meta // {
     description = "rustc wrapped for cross-compiling to MSVC from Unix systems";
-    maintainers = [  ];
+    maintainers = [ ];
   };
 }
