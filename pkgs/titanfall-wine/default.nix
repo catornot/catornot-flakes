@@ -6,10 +6,11 @@
   makeDesktopIcon,
   makeDesktopItem,
   mkWindowsAppNoCC,
-  wineWowPackages,
+  wineWow64Packages,
   zenity,
   graphicsDriver ? "auto",
   gameDir ? "$HOME/.local/share/Steam/steamapps/common/Titanfall2",
+  maxima-windows,
 }:
 let
   wineGameDir = "drive_c/Titanfall2";
@@ -17,7 +18,7 @@ let
 in
 mkWindowsAppNoCC rec {
   # Use mkWindowsApp just like mkDerivation.
-  wine = wineWowPackages.stable;
+  wine = wineWow64Packages.stable;
   enableVulkan = true;
   inhibitIdle = true;
   enableHug = true;
@@ -52,6 +53,8 @@ mkWindowsAppNoCC rec {
   # will be stored in the application layer.
   # wine, winetricks, cabextract, $WINEPREFIX, $WINEARCH, and $WINEDLLOVERRIDES are available and set up.
   winAppInstall = /* bash */ ''
+    cp ${maxima-windows}/bin/* "$WINEPREFIX/drive_c" 
+
     mkdir -p "$WINEPREFIX/${wineGameDir}"
   '';
 
@@ -62,6 +65,8 @@ mkWindowsAppNoCC rec {
   # wine, winetricks, cabextract, $WINEPREFIX, $WINEARCH, and $WINEDLLOVERRIDES are available and set up.
   winAppRun = /* bash */ ''
     if [ -f "${exePath}" ]; then
+      # $WINE regedit ${./link2ea.reg}
+      $WINE start /unix "$WINEPREFIX/drive_c/maxima-bootstrap.exe";
       $WINE start /unix "${exePath}";
     else
       ${zenity}/bin/zenity --error --text "Could not find the Titanfall2 installation at: ${gameDir}"
