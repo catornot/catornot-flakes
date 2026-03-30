@@ -89,6 +89,7 @@
             inherit maxima-windows;
           };
           mrvn-radiant = pkgs.callPackage ./mrvn-radiant { };
+          sqformat = pkgs.callPackage ./sqformat { };
         };
     };
 }

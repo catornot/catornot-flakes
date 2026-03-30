@@ -52,8 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qt5.qtbase
   ];
 
-  postPatch = ''
-  '';
+  postPatch = "";
 
   postInstall = ''
     cp -r ../install/* $out/bin
