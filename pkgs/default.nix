@@ -21,9 +21,17 @@
         overlays = [ (import inputs.rust-overlay) ];
       };
 
+
       packages =
         let
           erosanixLib = inputs.erosanix.lib."${system}";
+          pkgs-24 = import inputs.nixpkgs-24 {
+            inherit system;
+            config.allowUnfree = true;
+            config.allowUnsupportedSystem = true;
+            config.microsoftVisualStudioLicenseAccepted = true;
+            overlays = [ (import inputs.rust-overlay) ];
+          };
         in
         rec {
           titanfall2 = pkgs.callPackage ./titanfall2 { };
@@ -88,7 +96,7 @@
             inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon;
             inherit maxima-windows;
           };
-          mrvn-radiant = pkgs.callPackage ./mrvn-radiant { };
+          mrvn-radiant = pkgs-24.callPackage ./mrvn-radiant { };
           sqformat = pkgs.callPackage ./sqformat { };
         };
     };

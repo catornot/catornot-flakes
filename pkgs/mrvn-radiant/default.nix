@@ -1,67 +1,45 @@
 {
+  pkgs,
   lib,
-  stdenv,
-  makeDesktopItem,
-  fetchgit,
-  vulkan-loader,
-  mesa,
-  qt5,
-  glib,
-  libpng,
-  libjpeg,
-  makeWrapper,
-  pkg-config,
-  cmake,
-  libsForQt5,
-  libxml2,
-  assimp,
-  zlib,
-  libsysprof-capture,
   ...
 }:
-stdenv.mkDerivation (finalAttrs: {
+pkgs.stdenv.mkDerivation rec {
   pname = "MRVN-Radiant";
   version = "0.1.9";
 
-  src = fetchgit {
-    url = "https://github.com/${finalAttrs.pname}/${finalAttrs.pname}.git";
+  src = pkgs.fetchgit {
+    url = "https://github.com/${pname}/${pname}.git";
     rev = "cdd17d8a6966162fa5e326706ad4e9a3d7964fac";
     sha256 = "sha256-bzSOE/ueOftQerXS05MI9/1bxhOdWi3I1yGleCjM4hw=";
   };
 
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
+  nativeBuildInputs = with pkgs; [
+    autoPatchelfHook
+    copyDesktopItems
     cmake
-    libsForQt5.wrapQtAppsHook
-    libsysprof-capture
+    gcc
+    pkg-config
+    keepBuildTree # HACK: otherwise nix will complain about rpath linking to /build/
   ];
-  buildInputs = [
-    mesa
-    qt5.qtbase
+  buildInputs = with pkgs; [
+    pcre
+    libsysprof-capture
+    qt5.full
     glib
+    libxml2
+    zlib
     libpng
     libjpeg
-    libxml2
-    assimp
-    zlib
-    libsysprof-capture
-  ];
-  # not sure which ones to add but full is a no go because qtwebengine has a cve
-  runtimeDependencies = [
-    libsForQt5.qt5.qtbase
   ];
 
-  postPatch = "";
+  postPatch = ''
+    mkdir -p $out/bin
+    cp -r install/* $out/bin
 
+  '';
   postInstall = ''
     cp -r ../install/* $out/bin
-    wrapProgram $out/bin/${finalAttrs.pname} --prefix LD_LIBRARY_PATH : ${finalAttrs.LD_LIBRARY_PATH}
   '';
-
-  LD_LIBRARY_PATH = builtins.foldl' (
-    a: b: "${a}:${b}/lib"
-  ) "${vulkan-loader}/lib" finalAttrs.runtimeDependencies;
 
   cmakeFlags = [
     "-DBUILD_TOOLS=ON"
@@ -70,13 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   desktopItems = [
-    (makeDesktopItem {
-      desktopName = finalAttrs.pname;
-      name = finalAttrs.pname;
-      exec = finalAttrs.meta.mainProgram;
-      icon = "${finalAttrs.src}/icons/radiant-src.png";
+    (pkgs.makeDesktopItem {
+      desktopName = pname;
+      name = pname;
+      exec = meta.mainProgram;
+      icon = "${src}/icons/radiant-src.png";
       type = "Application";
-      comment = finalAttrs.meta.description;
+      comment = meta.description;
       terminal = false;
       categories = [ "Development" ];
       keywords = [
@@ -95,4 +73,4 @@ stdenv.mkDerivation (finalAttrs: {
     ];
     mainProgram = "radiant";
   };
-})
+}
