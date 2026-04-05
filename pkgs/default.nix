@@ -21,7 +21,6 @@
         overlays = [ (import inputs.rust-overlay) ];
       };
 
-
       packages =
         let
           erosanixLib = inputs.erosanix.lib."${system}";

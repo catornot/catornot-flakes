@@ -20,6 +20,7 @@ pkgs.stdenv.mkDerivation rec {
     gcc
     pkg-config
     keepBuildTree # HACK: otherwise nix will complain about rpath linking to /build/
+    libsForQt5.wrapQtAppsHook
   ];
   buildInputs = with pkgs; [
     pcre
@@ -30,6 +31,15 @@ pkgs.stdenv.mkDerivation rec {
     zlib
     libpng
     libjpeg
+    xorg.libxcb
+    xorg.libX11
+    xorg.libXext
+    xorg.libXrender
+    xorg.libXi
+    xorg.libSM
+    xorg.libICE
+    libGL
+    mesa
   ];
 
   postPatch = ''
@@ -41,6 +51,18 @@ pkgs.stdenv.mkDerivation rec {
     cp -r ../install/* $out/bin
   '';
 
+  installPhase = ''
+    runHook preInstall
+    cmake --install . --prefix $out
+    runHook postInstall
+  '';
+  postFixup = ''
+    wrapQtApp $out/bin/radiant \
+      --unset QT_STYLE_OVERRIDE \
+      --unset QT_QPA_PLATFORMTHEME \
+      --unset QT_PLUGIN_PATH \
+      --unset QML2_IMPORT_PATH
+  '';
   cmakeFlags = [
     "-DBUILD_TOOLS=ON"
     "-DBUILD_RADIANT=ON"
