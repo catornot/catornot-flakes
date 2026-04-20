@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation (final: {
 
   src = fetchurl {
     name = final.pname;
-    url = "https://catornot.net/?p=u/cat_or_not/r2overlay.git;a=blob;f=r2.zip;h=df57c87b9cbc87160a2975b96a1ca8b2b241fad7;hb=6f3c00d48546a2c9a3d92bfc63592267eb979609";
-    sha256 = "sha256-ezStKoJHW0lLM/aEVP67CaSk3wODbqDVy0sbvAKbg5I=";
+    url = "https://git.catornot.net/?p=u/cat_or_not/r2overlay.git;a=blob;f=r2.zip;h=1f00cd884fa59d6522a79af8a4aa0c74a5f2562a;hb=refs/heads/main";
+    sha256 = "0psyss12zdkaczi535b3iicfrwak1pjjd1k6slzmgw94lhkm53nv";
   };
 
   nativeBuildInputs = [
