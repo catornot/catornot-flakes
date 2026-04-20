@@ -4,7 +4,10 @@
   ...
 }:
 {
-  systems = [ "x86_64-linux" ];
+  systems = [
+    "x86_64-linux"
+    "aarch64-linux"
+  ];
 
   perSystem =
     {
@@ -61,7 +64,7 @@
             r2overlay = r2overlay;
             northstar = northstar;
             northstar-packages = (
-              builtins.map (self.libExport pkgs).nameToPackage [
+              map (self.libExport pkgs).nameToPackage [
                 {
                   name = "cat_or_not-AmpedMobilepoints-0.0.4";
                   sha256 = "sha256-xDhpK9DmQaPWhahyyPfPx7izUo5ghuLBaWsaVDP0oX4=";
@@ -90,11 +93,6 @@
           };
           minecraft-consoles = pkgs.callPackage ./minecraft-consoles { };
           maxima = pkgs.callPackage ./maxima { };
-          maxima-windows = pkgs.callPackage ./maxima-windows { inherit maxima; };
-          titanfall2-wine = pkgs.callPackage ./titanfall-wine {
-            inherit (erosanixLib) mkWindowsAppNoCC copyDesktopIcons makeDesktopIcon;
-            inherit maxima-windows;
-          };
           mrvn-radiant = pkgs-24.callPackage ./mrvn-radiant { };
           sqformat = pkgs.callPackage ./sqformat { };
         };

@@ -3,7 +3,6 @@
   rustPlatform,
   fetchFromGitHub,
   protobuf,
-  protobuf_25,
   pkgsBuildHost,
   libxkbcommon,
   vulkan-loader,
@@ -19,26 +18,20 @@
   libGL,
   autoPatchelfHook,
   makeWrapper,
-  stdenv,
   toolchain ? pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml,
-  rustc ? null,
+  rustc ? toolchain,
+  python314,
+  umu-launcher,
 }:
-let
-  isLinux =
-    attrs:
-    attrs.CARGO_BUILD_TARGET != "x86_64-pc-windows-gnu"
-    && attrs.CARGO_BUILD_TARGET != "x86_64-pc-windows-mvsc"
-    && stdenv.hostPlatform.isLinux;
-in
 (rustPlatform.buildRustPackage.override { rustc = rustc; }) (finalAttrs: {
   pname = "Maxima";
   version = "0.0.0";
 
   src = fetchFromGitHub {
-    owner = "ArmchairDevelopers";
+    owner = "catornot";
     repo = finalAttrs.pname;
-    rev = "cbde5f0002d6f16fb67dfa79ad96b705e1c591bf";
-    hash = "sha256-6SAbVDm1S/QJsgCQYjEB9ydsrElofZfhu+aMug4rCnQ=";
+    rev = "ecf7860c838f9049f16b20fd4577e1c85a2b9604";
+    hash = "sha256-giTGRsL9QiN1Yn/x6ZWTXjJ1lM7So9V0+hk/AUw+XM8=";
   };
 
   cargoLock = {
@@ -49,14 +42,13 @@ in
     };
   };
 
-  nativeBuildInputs = lib.optionals (isLinux finalAttrs) [
+  nativeBuildInputs = [
     toolchain
     autoPatchelfHook
     makeWrapper
   ];
 
-  buildInputs = lib.optionals (isLinux finalAttrs) [
-    protobuf_25
+  buildInputs = [
     protobuf
     pkg-config
     expat
@@ -77,7 +69,11 @@ in
     "--skip=cloudsync"
   ];
 
-  runtimeDependencies = lib.optionals (isLinux finalAttrs) [
+  patches = [
+    ./wsock32.patch
+  ];
+
+  runtimeDependencies = [
     expat
     fontconfig
     freetype
@@ -100,13 +96,20 @@ in
     export PROTOC=${lib.getExe' protobuf "protoc"} 
   '';
 
-  postInstall =
-    if (isLinux finalAttrs) then
-      ''
-        wrapProgram $out/bin/maxima --prefix LD_LIBRARY_PATH : ${finalAttrs.LD_LIBRARY_PATH}
-      ''
-    else
-      "";
+  postInstall = ''
+    wrapProgram $out/bin/maxima --prefix LD_LIBRARY_PATH : ${finalAttrs.LD_LIBRARY_PATH} --prefix PATH : ${
+      lib.makeBinPath [
+        umu-launcher
+        python314.out
+      ]
+    } --prefix MAXIMA_WINE_COMMAND : umu-run
+    wrapProgram $out/bin/maxima-cli --prefix LD_LIBRARY_PATH : ${finalAttrs.LD_LIBRARY_PATH} --prefix PATH : ${
+      lib.makeBinPath [
+        umu-launcher
+        python314.out
+      ]
+    } --prefix MAXIMA_WINE_COMMAND : umu-run
+  '';
 
   meta = {
     description = "A free and open-source replacement for the EA Desktop Launcher for Linux and Windows.";
