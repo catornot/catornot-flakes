@@ -1,5 +1,25 @@
-#!/bin/sh
+#!/bin/bash
 set -e
+
+mkdir -p home/northstar/.cache
+mkdir -p home/northstar/.cache/fontconfig
+mkdir -p .cache
+mkdir -p .cache/fontconfig
+
+export WINEARCH=win64 WINEDLLOVERRIDES=\"mscoree,mshtml,winemenubuilder.exe=\"
+mkdir -p "$WINEPREFIX"
+
+wine wineboot --init
+wine reg add 'HKCU\\Software\\Wine' /v 'Version' /t REG_SZ /d 'win10' /f
+wine reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Audio' /t REG_SZ /d '' /f
+wine reg add 'HKCU\\Software\\Wine\\WineDbg' /v 'ShowCrashDialog' /t REG_DWORD /d 0 /f
+wine reg add 'HKCU\\Software\\Wine\\Drivers' /v 'Graphics' /t REG_SZ /d 'null' /f
+wine reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mscoree' /t REG_SZ /d '' /f
+wine reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'mshtml' /t REG_SZ /d '' /f
+wine reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'winemenubuilder' /t REG_SZ /d '' /f
+wine reg add 'HKCU\\Software\\Wine\\DllOverrides' /v 'd3d11' /t REG_SZ /d 'native' /f
+wine wineboot --shutdown --force
+wine wineboot --kill --force
 
 TF2_DIR=/mnt/titanfall2
 NORTHSTAR_DIR=/mnt/northstar
@@ -11,7 +31,7 @@ if [ -d "$TMP_DIR/" ]; then
 	rm -r $TMP_DIR
 fi
 
-mkdir $TMP_DIR
+mkdir -p $TMP_DIR
 
 if [ ! -d "$TF2_DIR/" ]; then
 	echo "TF2 directory doesn't exist or is not a directory."
