@@ -33,15 +33,19 @@ jobs:
         run: |
           nix run github:Mic92/nix-update -- --flake northstar --use-github-releases
 
+      - name: Update Inputs
+        run: |
+          nix flake update bp-ort r2rcon-rs
+
       - name: Create pull request for Northstar Releases update
         id: create-pr
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ steps.app-token.outputs.token }}
-          commit-message: "chore(deps): Update Northstar Releases"
+          commit-message: "chore(deps): Update Northstar Releases & Inputs"
           branch: update-releases
-          title: "chore(deps): Update Northstar Releases"
-          body: "Update Northstar Releases"
+          title: "chore(deps): Update Northstar Releases & Inputs"
+          body: "Update Northstar Releases & Inputs"
           author: "northstar-nightly-flake-updater[bot] <northstar-nightly-flake-updater[bot]@users.noreply.github.com>"
           committer: "northstar-nightly-flake-updater[bot] <northstar-nightly-flake-updater[bot]@users.noreply.github.com>"
           labels: |
@@ -55,21 +59,3 @@ jobs:
           gh pr merge --auto -ds ${{ steps.create-pr.outputs.pull-request-number }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Update flake inputs
-        uses: mic92/update-flake-inputs@main
-        # github-token defaults to ${{ github.token }}
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          # Optional: exclude specific files or inputs
-          exclude-patterns: 'flake.nix#flake-utils,flake.nix#nixpkgs,flakes.nix#rust-overlay,flakes.nix#erosanix,rust-overlay'
-          # Optional: add custom labels (default: 'dependencies')
-          # pr-labels: 'dependencies,automated'
-          # Optional: enable auto-merge (default: false)
-          auto-merge: 'true'
-          # Optional: choose merge method when auto-merge is enabled (default: MERGE)
-          auto-merge-method: 'SQUASH'
-          git-author-name: northstar-nightly-flake-updater[bot]
-          git-author-email: northstar-nightly-flake-updater[bot]@users.noreply.github.com
-          git-committer-name: northstar-nightly-flake-updater[bot]
-          git-committer-email: northstar-nightly-flake-updater[bot]@users.noreply.github.com
