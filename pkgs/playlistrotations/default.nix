@@ -27,7 +27,7 @@ stdenvNoCC.mkDerivation (final: {
   src = fetchFromGitHub {
     owner = "catornot";
     repo = "PlaylistRotations";
-    rev = "c5a344e147674f6fff4975fbd36158360563eb7c";
+    rev = "9b98737f493a9b312bcb439087b4bcd7812740ee";
     sha256 = "sha256-fUWuBnX+PAq2kaMywMcDFc/Ysv0/CbL8tizMZEnMRCU=";
   };
 
@@ -46,7 +46,6 @@ stdenvNoCC.mkDerivation (final: {
         if rotationsDef != "" then
           mkPlaylistDefinition rotationsDef
         else
-          # ""
           throw "rotationsDef cannot be empty"
       )
     } "$unpackDir/mod/scripts/vscripts/_playlist_rotations_def.gnut"
