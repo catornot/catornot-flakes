@@ -20,7 +20,7 @@ stdenvNoCC.mkDerivation rec {
 
   installPhase = ''
     mkdir $out
-    cp -r $src $out
+    cp -r $src/* $out
   '';
 
   passthru.updateScript = nix-update-script { };
