@@ -22,13 +22,13 @@ let
 in
 stdenvNoCC.mkDerivation (final: {
   pname = "PlaylistRotations";
-  version = "0.1.0";
+  version = "0.2.0";
 
   src = fetchFromGitHub {
     owner = "catornot";
     repo = "PlaylistRotations";
     rev = "9b98737f493a9b312bcb439087b4bcd7812740ee";
-    sha256 = "sha256-fUWuBnX+PAq2kaMywMcDFc/Ysv0/CbL8tizMZEnMRCU=";
+    sha256 = "sha256-jxIpnNHNZO6ioY3G+VY32fadLFF1uVcgOTXVLa0+tmo=";
   };
 
   installPhase = ''
