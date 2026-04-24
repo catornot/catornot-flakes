@@ -69,10 +69,6 @@
     "--skip=cloudsync"
   ];
 
-  patches = [
-    ./wsock32.patch
-  ];
-
   runtimeDependencies = [
     expat
     fontconfig
