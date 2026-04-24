@@ -27,8 +27,8 @@ stdenvNoCC.mkDerivation (final: {
   src = fetchFromGitHub {
     owner = "catornot";
     repo = "PlaylistRotations";
-    rev = "9b98737f493a9b312bcb439087b4bcd7812740ee";
-    sha256 = "sha256-jxIpnNHNZO6ioY3G+VY32fadLFF1uVcgOTXVLa0+tmo=";
+    rev = "1ef1785b063fa357965c2bdc48f4ed12aa6aab6a";
+    sha256 = "sha256-j7g+JqXzwDvD+TbQnE2tEfZo0COzyww5JyCrHyIAL1I=";
   };
 
   installPhase = ''
