@@ -95,6 +95,7 @@
           maxima = pkgs.callPackage ./maxima { };
           mrvn-radiant = pkgs-24.callPackage ./mrvn-radiant { };
           sqformat = pkgs.callPackage ./sqformat { };
+          splitsh-lite = pkgs.callPackage ./splitsh-lite { };
         };
     };
 }
