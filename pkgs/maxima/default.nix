@@ -98,13 +98,13 @@
         umu-launcher
         python314.out
       ]
-    } --prefix MAXIMA_WINE_COMMAND : umu-run
+    } --prefix MAXIMA_WINE_COMMAND : umu-run --prefix MAXIMA_PACKAGED : 1
     wrapProgram $out/bin/maxima-cli --prefix LD_LIBRARY_PATH : ${finalAttrs.LD_LIBRARY_PATH} --prefix PATH : ${
       lib.makeBinPath [
         umu-launcher
         python314.out
       ]
-    } --prefix MAXIMA_WINE_COMMAND : umu-run
+    } --prefix MAXIMA_WINE_COMMAND : umu-run --prefix MAXIMA_PACKAGED : 1
   '';
 
   meta = {
