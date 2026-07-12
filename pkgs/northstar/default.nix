@@ -2,8 +2,8 @@
   stdenvNoCC,
   lib,
   fetchzip,
-  version ? "1.31.9",
-  sha256 ? "sha256-kjKu5hkB+hRsp4bZT0C/pM4diBBKFp98L9Lz70eqlog=",
+  version ? "1.31.10",
+  sha256 ? "sha256-BNyQxegGn52yhrXBEC1/CPJc0hw/2xCUdMX0U/6NJtA=",
   nix-update-script,
 }:
 let
