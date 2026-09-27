@@ -8,11 +8,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1787271836,
-        "narHash": "sha256-xfw9rsXJeQLCsa4Sq9kjZOll5XGbRE+79W/8asJr2bg=",
+        "lastModified": 1790391277,
+        "narHash": "sha256-nK/JorfpceBLwSNP+6izhnOJdgHWbpCMzN1R4D6GH+0=",
         "owner": "catornot",
         "repo": "bp-ort",
-        "rev": "cab3319e53c09b4900e015370a849c5afc82f651",
+        "rev": "fe22e9c2466cc7fcdd07cedb98dfe3f852f76a5a",
         "type": "github"
       },
       "original": {
